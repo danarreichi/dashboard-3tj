@@ -24,7 +24,6 @@ class InventoryRepository extends BaseRepository
         if (request('q')) {
             $query->where(function($q) {
                 $q->where('name', 'LIKE', '%' . request('q') . '%');
-                $q->orWhere('code', 'LIKE', '%' . request('q') . '%');
                 $q->orWhere('unit', 'LIKE', '%' . request('q') . '%');
             });
         }

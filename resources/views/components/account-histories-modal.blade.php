@@ -28,6 +28,7 @@
                                 <th>Status</th>
                                 <th>Qty</th>
                                 <th>Qty terbarui</th>
+                                <th>Harga</th>
                                 <th>Tangggal diubah</th>
                             </tr>
                         </thead>

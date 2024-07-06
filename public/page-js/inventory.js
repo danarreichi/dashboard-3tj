@@ -113,16 +113,13 @@ let customized_datatable = $('#inventoryTable').DataTable({
             }
         },
         {
-            data: 'code'
-        },
-        {
             data: 'name'
         },
         {
-            data: 'unit'
+            data: 'qty'
         },
         {
-            data: 'qty'
+            data: 'unit'
         },
         {
             data: null,
@@ -226,6 +223,9 @@ function getInventoryHistory(element) {
             },
             {
                 data: 'new_qty'
+            },
+            {
+                data: 'price'
             },
             {
                 data: null,
@@ -332,7 +332,6 @@ function getInventory(element) {
         success: function (response) {
             $('#uuidEdit').val(response.data.uuid);
             $('#nameEdit').val(response.data.name);
-            $('#codeEdit').val(response.data.code);
             $('#unitEdit').val(response.data.unit);
             $('#qtyEdit').val(response.data.qty);
             $('#delete').attr('data-uuid', response.data.uuid);

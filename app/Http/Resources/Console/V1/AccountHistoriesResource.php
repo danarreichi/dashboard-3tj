@@ -5,7 +5,7 @@ namespace App\Http\Resources\Console\V1;
 use App\Traits\RelationShortcut;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class InventoryHistoriesResource extends JsonResource
+class AccountHistoriesResource extends JsonResource
 {
     use RelationShortcut;
 
@@ -18,7 +18,7 @@ class InventoryHistoriesResource extends JsonResource
     public function toArray($request)
     {
         return [
-            'name' => $this->getPropWhenLoaded('user', 'name'),
+            'name' => $this->getPropWhenLoaded('inventory', 'name'),
             'status' => $this->status,
             'qty' => $this->qty . $this->getPropWhenLoaded('inventory', 'unit'),
             'price' => "Rp" . number_format($this->price, 2, ",", "."),

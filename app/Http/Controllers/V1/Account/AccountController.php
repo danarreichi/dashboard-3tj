@@ -5,8 +5,8 @@ namespace App\Http\Controllers\V1\Account;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Console\V1\StoreAccountRequest;
 use App\Http\Requests\Console\V1\UpdateAccountRequest;
+use App\Http\Resources\Console\V1\AccountHistoriesResource;
 use App\Http\Resources\Console\V1\AccountResource;
-use App\Http\Resources\Console\V1\InventoryHistoriesResource;
 use App\Models\User;
 use App\Repositories\Account\AccountRepository;
 use App\Repositories\Inventory\InventoryHistoryRepository;
@@ -72,7 +72,7 @@ class AccountController extends Controller
     public function history(User $user)
     {
         [$history, $dateMin, $dateMax] = $this->inventoryHistoryRepository->listByAccount($user);
-        return InventoryHistoriesResource::collection($history)->additional([
+        return AccountHistoriesResource::collection($history)->additional([
             'meta' => [
                 'date_min' => $dateMin,
                 'date_max' => $dateMax

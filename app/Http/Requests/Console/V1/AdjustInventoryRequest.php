@@ -27,7 +27,8 @@ class AdjustInventoryRequest extends FormRequest
     public function rules()
     {
         return [
-            'status' => ['required', 'in:in,out'],
+            'status' => ['required', 'in:in'],
+            'price' => ['required', 'numeric', 'min:1'],
             'qty' => ['required', 'numeric', 'min:1', new AdjustInventoryQtyRules($this->inventory, $this)],
         ];
     }

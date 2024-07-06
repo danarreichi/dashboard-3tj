@@ -26,10 +26,10 @@ class StoreInventoryRequest extends FormRequest
     public function rules()
     {
         return [
-            'code' => ['required', Rule::unique('inventories', 'code'), 'min:6', 'max:6'],
-            'name' => ['required'],
+            'name' => ['required', Rule::unique('inventories', 'name')],
+            'price' => ['required', 'numeric', 'min:1'],
             'unit' => ['required'],
-            'qty' => ['required', 'numeric', 'min:0']
+            'qty' => ['required', 'numeric', 'min:1']
         ];
     }
 }

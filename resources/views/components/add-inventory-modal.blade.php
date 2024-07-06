@@ -16,18 +16,18 @@
                     <div class="form-group">
                         <input id="name" name="name" type="text" placeholder="Masukkan nama barang yang diinginkan" class="form-control" required>
                     </div>
-                    <label for="code" class="form-label">Kode</label>
+                    <label for="qty" class="form-label">Stock</label>
                     <div class="form-group">
-                        <input type="text" class="form-control" name="code" pattern=".{6,6}" oninput="this.value = this.value.toUpperCase().slice(0, 6);" placeholder="Masukkan kode yang mewakili (cont. BOK001)" id="code" required>
+                        <input id="qty" name="qty" type="number" placeholder="Masukkan stok awal"
+                            class="form-control" required>
                     </div>
                     <label for="unit" class="form-label">Unit</label>
                     <div class="form-group">
                         <input type="text" class="form-control" name="unit" placeholder="Masukkan satuan yang diinginkan" id="unit" required>
                     </div>
-                    <label for="qty" class="form-label">Stock</label>
+                    <label for="code" class="form-label">Harga Restock</label>
                     <div class="form-group">
-                        <input id="qty" name="qty" type="number" placeholder="Masukkan stok awal"
-                            class="form-control" required>
+                        <input type="number" class="form-control" min="1" name="price" placeholder="Masukkan harga restock awal" id="price" required>
                     </div>
                 </div>
                 <div class="modal-footer">

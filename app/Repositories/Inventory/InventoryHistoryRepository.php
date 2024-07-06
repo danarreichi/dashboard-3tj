@@ -34,7 +34,7 @@ class InventoryHistoryRepository extends BaseRepository
     {
         $filters = [AllowedFilter::scope('start_between')];
         $sorts = ['updated_at'];
-        $query = parent::index($filters, $sorts)->with('user')->where('inventory_id', $inventory->id)->orderByDesc('id');
+        $query = parent::index($filters, $sorts)->with('user', 'inventory')->where('inventory_id', $inventory->id)->orderByDesc('id');
         if (request('q')) $query->whereHas('user', fn ($q) => $q->where('name', 'LIKE', '%' . request('q') . '%'));
 
         $dateMin = InventoryHistory::where('inventory_id', $inventory->id)->min('created_at');

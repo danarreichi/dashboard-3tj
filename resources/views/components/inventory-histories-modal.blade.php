@@ -34,18 +34,19 @@
                                         <input type="hidden" name="status" id="status">
                                         <div class="input-group">
                                             <div class="row w-100">
-                                                <div class="col-8">
+                                                <div class="col-5">
+                                                    <label for="qty" class="form-label">Qty Restock</label>
                                                     <input type="number" name="qty" min="1"
-                                                        class="form-control" placeholder="Masukkan qty yang ingin diatur" required>
+                                                        class="form-control" placeholder="Masukkan qty restock" required>
                                                 </div>
-                                                <div class="col-2">
+                                                <div class="col-5">
+                                                    <label for="price" class="form-label">Harga Restock</label>
+                                                    <input type="number" name="price" min="1"
+                                                        class="form-control" placeholder="Masukkan harga restock" required>
+                                                </div>
+                                                <div class="col-2 d-grid align-items-end">
                                                     <button class="btn btn-success w-100" data-status="in" onclick="document.getElementById('status').value = this.dataset.status">
-                                                        <span>Masuk</span>
-                                                    </button>
-                                                </div>
-                                                <div class="col-2">
-                                                    <button class="btn btn-danger w-100" data-status="out" onclick="document.getElementById('status').value = this.dataset.status">
-                                                        <span>Keluar</span>
+                                                        <span>Simpan</span>
                                                     </button>
                                                 </div>
                                             </div>
@@ -72,6 +73,7 @@
                                 <th>Status</th>
                                 <th>Qty</th>
                                 <th>Qty terbarui</th>
+                                <th>Harga</th>
                                 <th>Tangggal diubah</th>
                             </tr>
                         </thead>

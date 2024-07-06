@@ -26,8 +26,7 @@ class UpdateInventoryRequest extends FormRequest
     public function rules()
     {
         return [
-            'code' => ['required', Rule::unique('inventories', 'code')->whereNot('uuid', $this->inventory->uuid), 'min:6', 'max:6'],
-            'name' => ['required'],
+            'name' => ['required', Rule::unique('inventories', 'name')->whereNot('uuid', $this->inventory->uuid)],
             'unit' => ['required'],
             'qty' => ['required', 'numeric', 'min:0']
         ];

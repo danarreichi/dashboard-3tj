@@ -241,6 +241,9 @@ function getAccountHistory(element) {
                 data: 'new_qty'
             },
             {
+                data: 'price'
+            },
+            {
                 data: null,
                 render: function (data, type, row) {
                     return dateIndFormat(row.created_at);

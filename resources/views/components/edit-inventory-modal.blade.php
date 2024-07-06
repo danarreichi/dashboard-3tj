@@ -17,10 +17,6 @@
                     <div class="form-group">
                         <input id="nameEdit" name="name" type="text" placeholder="Masukkan nama barang yang diinginkan" class="form-control" required>
                     </div>
-                    <label for="code" class="form-label">Kode</label>
-                    <div class="form-group">
-                        <input  id="codeEdit" name="code" type="text" class="form-control" pattern=".{6,6}" oninput="this.value = this.value.toUpperCase().slice(0, 6);" placeholder="Masukkan kode yang mewakili (cont. BOK001)" required>
-                    </div>
                     <label for="unit" class="form-label">Unit</label>
                     <div class="form-group">
                         <input id="unitEdit" name="unit" type="text" class="form-control" placeholder="Masukkan satuan yang diinginkan" required>

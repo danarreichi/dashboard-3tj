@@ -16,6 +16,7 @@ use App\Repositories\Inventory\InventoryRepository;
 use Illuminate\Support\Facades\Auth;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 
 class InventoryController extends Controller
@@ -41,12 +42,13 @@ class InventoryController extends Controller
     public function store(StoreInventoryRequest $request)
     {
         $inventory = DB::transaction(function () use ($request) {
-            $data = $this->repository->create($request->validated());
+            $data = $this->repository->create(Arr::except($request->validated(), 'price'));
             $this->inventoryHistoryRepository->create([
                 'inventory_id' => $data->id,
                 'user_id' => Auth::user()->id,
                 'status' => InventoryHistory::STATUS_IN,
                 'qty' => $data->qty,
+                'price' => $request->validated()['price'],
                 'payload' => [
                     'old_qty' => 0,
                     'new_qty' => $data->qty
@@ -95,6 +97,7 @@ class InventoryController extends Controller
                 'user_id' => Auth::user()->id,
                 'status' => $attributes['status'],
                 'qty' => $attributes['qty'],
+                'price' => $attributes['price'],
                 'payload' => [
                     'old_qty' => $oldQty,
                     'new_qty' => $updatedInventory->qty
