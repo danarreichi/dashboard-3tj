@@ -9,9 +9,9 @@ class MenuRecipe extends BaseModel
 {
     use HasFactory;
 
-    public function sales()
+    public function history()
     {
-        return $this->hasMany(Sale::class);
+        return $this->belongsTo(InventoryHistory::class);
     }
 
     public function price()

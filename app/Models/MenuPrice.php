@@ -32,4 +32,9 @@ class MenuPrice extends BaseModel
     {
         return $this->belongsTo(Menu::class);
     }
+
+    public function sales()
+    {
+        return $this->hasMany(Sale::class);
+    }
 }

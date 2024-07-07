@@ -9,8 +9,8 @@ class Sale extends BaseModel
 {
     use HasFactory;
 
-    public function recipe()
+    public function price()
     {
-        return $this->belongsTo(MenuRecipe::class);
+        return $this->belongsTo(MenuPrice::class);
     }
 }

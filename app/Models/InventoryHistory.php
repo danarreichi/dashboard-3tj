@@ -27,6 +27,11 @@ class InventoryHistory extends BaseModel
         return $this->belongsTo(User::class);
     }
 
+    public function recipes()
+    {
+        return $this->hasMany(MenuRecipe::class);
+    }
+
     public function scopeStartBetween(Builder $query, $startDate, $endDate)
     {
         return $query
