@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
-class Menu extends BaseModel
+class MenuCategory extends BaseModel
 {
     use HasFactory, SoftDeletes;
 
@@ -24,18 +24,8 @@ class Menu extends BaseModel
         return 'uuid';
     }
 
-    public function image()
+    public function menus()
     {
-        return $this->morphOne(Mediafile::class, 'model')->orderBy('sequence', 'asc');
-    }
-
-    public function prices()
-    {
-        return $this->hasMany(MenuPrice::class);
-    }
-
-    public function category()
-    {
-        return $this->belongsTo(MenuCategory::class);
+        return $this->hasMany(Menu::class);
     }
 }
