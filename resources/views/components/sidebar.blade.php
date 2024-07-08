@@ -52,6 +52,15 @@
                     </a>
                 </li>
 
+                <li class="sidebar-item {{ request()->routeIs('menu-category') ? 'active' : '' }}">
+                    <a href="menu-category" class='sidebar-link'>
+                        <i class="bi bi-list-ul"></i>
+                        <span>Kategori Menu</span>
+                    </a>
+                </li>
+
+                <li class="sidebar-title">Pengaturan</li>
+
                 <li class="sidebar-item {{ request()->routeIs('account') ? 'active' : '' }}">
                     <a href="account" class='sidebar-link'>
                         <i class="bi bi-person-circle"></i>
