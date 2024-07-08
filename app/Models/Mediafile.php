@@ -29,13 +29,8 @@ class Mediafile extends BaseModel
         return $this->morphTo();
     }
 
-    public function getUrlAttribute()
+    public function getPathAttribute($value)
     {
-        return config('mediafiles.assets_host') . $this->path;
-    }
-
-    public function getRawPathAttribute()
-    {
-        return $this->path;
+        return "storage/" . $value;
     }
 }

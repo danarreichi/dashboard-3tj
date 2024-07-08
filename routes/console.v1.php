@@ -29,4 +29,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('inventory/{id}/restore', [V1\Inventory\InventoryController::class, 'restore'])->name('inventory-restore');
     Route::get('inventory/{inventory}/history', [V1\Inventory\InventoryController::class, 'history'])->name('inventory-history');
     Route::post('inventory/{inventory}/adjust', [V1\Inventory\InventoryController::class, 'adjust'])->name('inventory-adjust');
+
+    Route::apiResource('menu-category', V1\MenuCategory\MenuCategoryController::class)->names('menu-category');
+    Route::get('menu-category/{menuCategory}/restore', [V1\MenuCategory\MenuCategoryController::class, 'restore'])->name('menu-category-restore');
 });
