@@ -21,6 +21,8 @@
     {{-- DataTables --}}
     <link rel="stylesheet" href="{{ asset('dist/assets/extensions/datatables.net-bs5/css/dataTables.bootstrap5.min.css') }}">
     <link rel="stylesheet" crossorigin href="{{ asset('dist/assets/compiled/css/table-datatable-jquery.css') }}">
+    {{-- Flatpickr --}}
+    <link rel="stylesheet" href="{{ asset('dist/assets/extensions/flatpickr/flatpickr.min.css') }}">
 </head>
 
 <body>
@@ -35,7 +37,7 @@
             </header>
 
             <div class="page-heading d-flex align-items-center justify-content-between">
-                <h3>Kategori Menu</h3>
+                <h3>Menu</h3>
                 <x-profile-dropdown></x-profile-dropdown>
             </div>
             <div class="page-content">
@@ -45,7 +47,7 @@
                             <div class="col-12">
                                 <div class="card">
                                     <div class="card-header">
-                                        <h4>Daftar Kategori Menu</h4>
+                                        <h4>Daftar Menu</h4>
                                     </div>
                                     <div class="card-body">
                                         <div class="row align-items-center">
@@ -53,28 +55,28 @@
                                                 <label for="filterTrashed" class="form-label">Filter data:</label>
                                                 <div class="filter-container col-12">
                                                     <select id="filterTrashed" class="form-select">
-                                                        <option value="">Kategori menu aktif</option>
-                                                        <option value="only">Kategori menu non-aktif</option>
+                                                        <option value="">Menu aktif</option>
+                                                        <option value="only">Menu non-aktif</option>
                                                         <option value="with">Semua</option>
                                                     </select>
                                                 </div>
                                             </div>
-                                            <div class="col-auto ms-auto align-self-end" id="addMenuCategoryBtn" style="display: none;">
+                                            <div class="col-auto ms-auto align-self-end" id="addInventoryBtn" style="display: none;">
                                                 <button data-bs-toggle="modal" data-bs-target="#primary"
                                                     class="btn btn-primary w-100 d-flex justify-content-center align-items-center">
-                                                    <span class="me-2"><i class="bi bi-person-plus-fill"></i></span>Tambah Kategori Menu
+                                                    <span class="me-2"><i class="bi bi-person-plus-fill"></i></span>Tambah menu
                                                 </button>
                                             </div>
                                         </div>
 
                                         <hr>
                                         <div class="table-responsive datatable-minimal">
-                                            <table class="table" id="menuCategoryTable">
+                                            <table class="table" id="menuTable">
                                                 <thead>
                                                     <tr>
                                                         <th>No.</th>
                                                         <th>Nama</th>
-                                                        <th>Menu Terdaftar</th>
+                                                        <th>Kategori</th>
                                                         <th>Terakhir Diperbarui</th>
                                                         <th>Aksi</th>
                                                     </tr>
@@ -102,8 +104,9 @@
                     </div>
                 </div>
             </footer>
-            <x-add-category-menu-modal></x-add-category-menu-modal>
-            <x-edit-category-menu-modal></x-edit-category-menu-modal>
+            <x-add-inventory-modal></x-add-inventory-modal>
+            <x-edit-inventory-modal></x-edit-inventory-modal>
+            <x-inventory-histories-modal></x-inventory-histories-modal>
         </div>
     </div>
     <script src="{{ asset('dist/assets/static/js/components/dark.js') }}"></script>
@@ -117,9 +120,12 @@
     <script src="{{ asset('dist/assets/extensions/datatables.net-bs5/js/dataTables.bootstrap5.min.js') }}"></script>
     <!-- SweetAlert2 -->
     <script src="{{ asset('dist/assets/extensions/sweetalert2/sweetalert2.min.js') }}"></script>
+    {{-- Flatpickr --}}
+    <script src="{{ asset('dist/assets/extensions/flatpickr/flatpickr.min.js') }}"></script>
+    <script src="{{ asset('dist/assets/extensions/flatpickr/l10n/id.js') }}"></script>
     {{-- Page JS --}}
     <script src="{{ asset('page-js/base.js') }}"></script>
-    <script src="{{ asset('page-js/menu-category.js') }}"></script>
+    <script src="{{ asset('page-js/inventory.js') }}"></script>
 </body>
 
 </html>

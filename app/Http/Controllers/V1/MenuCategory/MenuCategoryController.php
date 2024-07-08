@@ -58,7 +58,7 @@ class MenuCategoryController extends Controller
 
     public function destroy(MenuCategory $menuCategory)
     {
-        abort_if(Auth::user()->userRole->id === 'user', 403, __("As User, you Can't delete menu category"));
+        abort_if(Auth::user()->userRole->id === 'user', 403, __("User tidak bisa menghapus kategori menu"));
         return $this->repository->destroy($menuCategory);
     }
 

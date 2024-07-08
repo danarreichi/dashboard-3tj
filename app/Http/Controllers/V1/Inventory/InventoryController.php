@@ -76,7 +76,7 @@ class InventoryController extends Controller
 
     public function destroy(Inventory $inventory)
     {
-        abort_if(Auth::user()->userRole->id === 'user', 403, __("As User, you Can't delete an inventory"));
+        abort_if(Auth::user()->userRole->id === 'user', 403, __("User tidak bisa menghapus inventory"));
         return $this->repository->destroy($inventory);
     }
 

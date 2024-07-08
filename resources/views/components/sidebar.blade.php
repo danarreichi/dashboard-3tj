@@ -59,6 +59,13 @@
                     </a>
                 </li>
 
+                <li class="sidebar-item {{ request()->routeIs('menu') ? 'active' : '' }}">
+                    <a href="menu" class='sidebar-link'>
+                        <i class="bi bi-journals"></i>
+                        <span>Menu</span>
+                    </a>
+                </li>
+
                 <li class="sidebar-title">Pengaturan</li>
 
                 <li class="sidebar-item {{ request()->routeIs('account') ? 'active' : '' }}">

@@ -1,18 +1,17 @@
 <?php
 
-namespace App\Repositories\MenuCategory;
+namespace App\Repositories\Menu;
 
-use App\Models\Inventory;
-use App\Models\MenuCategory;
+use App\Models\Menu;
 use App\Repositories\BaseRepository;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Spatie\QueryBuilder\AllowedFilter;
 
-class MenuCategoryRepository extends BaseRepository
+class MenuRepository extends BaseRepository
 {
-    public function __construct(MenuCategory $model)
+    public function __construct(Menu $model)
     {
         $this->model = $model;
     }
@@ -21,7 +20,7 @@ class MenuCategoryRepository extends BaseRepository
     {
         $filters = [AllowedFilter::trashed()];
         $sorts = ['name', 'updated_at'];
-        $query = parent::index($filters, $sorts)->withCount('menus');
+        $query = parent::index($filters, $sorts);
         if (request('q')) {
             $query->where(function($q) {
                 $q->where('name', 'LIKE', '%' . request('q') . '%');

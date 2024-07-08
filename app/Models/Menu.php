@@ -10,6 +10,8 @@ class Menu extends BaseModel
 {
     use HasFactory, SoftDeletes;
 
+    protected $with = ['image', 'category'];
+
     public static function boot()
     {
         parent::boot();
@@ -36,6 +38,6 @@ class Menu extends BaseModel
 
     public function category()
     {
-        return $this->belongsTo(MenuCategory::class);
+        return $this->belongsTo(MenuCategory::class, 'menu_category_id');
     }
 }

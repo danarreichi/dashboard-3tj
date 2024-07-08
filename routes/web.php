@@ -25,6 +25,10 @@ Route::get('/menu-category', function () {
     return view('menu-category');
 })->name('menu-category');
 
+Route::get('/menu', function () {
+    return view('menu');
+})->name('menu');
+
 Route::get('/account', function () {
     return view('accounts');
 })->name('account');

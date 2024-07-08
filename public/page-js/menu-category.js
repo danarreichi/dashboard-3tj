@@ -100,6 +100,12 @@ let customized_datatable = $('#menuCategoryTable').DataTable({
         {
             data: null,
             render: function (data, type, row) {
+                return row.menu_count + ' Produk';
+            }
+        },
+        {
+            data: null,
+            render: function (data, type, row) {
                 return dateIndFormat(row.updated_at);
             }
         },
