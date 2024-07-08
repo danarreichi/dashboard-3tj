@@ -95,7 +95,7 @@ function getRoleDropdown(type) {
         'Authorization': 'Bearer ' + localStorage.getItem("bearer")
     };
     $.ajax({
-        url: host + "role-dropdown",
+        url: host + "dropdown/role",
         type: 'GET',
         headers: headers,
         success: function (response) {

@@ -19,7 +19,6 @@ Route::post('login', [V1\LoginController::class, 'authorization'])->name('login'
 
 Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('profile', [V1\LoginController::class, 'getProfile'])->name('profile');
-    Route::get('role-dropdown', [V1\Role\RoleController::class, 'getRoleDropdown'])->name('get-role-dropdown');
 
     Route::apiResource('account', V1\Account\AccountController::class)->names('account');
     Route::get('account/{id}/restore', [V1\Account\AccountController::class, 'restore'])->name('account-restore');
@@ -37,4 +36,5 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('menu/{menu}/restore', [V1\Menu\MenuController::class, 'restore'])->name('menu-restore');
 
     Route::get('dropdown/menu-category', [V1\MenuCategory\MenuCategoryController::class, 'dropdown'])->name('dropdown-menu-category');
+    Route::get('dropdown/role', [V1\Role\RoleController::class, 'getRoleDropdown'])->name('dropdown-role');
 });
