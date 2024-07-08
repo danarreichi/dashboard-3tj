@@ -17,7 +17,7 @@ class RoleController extends Controller
         $this->repository = $repository;
     }
 
-    public function getRoleDropdown()
+    public function dropdown()
     {
         return RoleDropdownResource::collection($this->repository->getRoleDropdown());
     }
