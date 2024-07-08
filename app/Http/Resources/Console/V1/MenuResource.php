@@ -21,6 +21,7 @@ class MenuResource extends JsonResource
             'uuid' => $this->uuid,
             'name' => $this->name,
             'category' => $this->getPropWhenLoaded('category', 'name'),
+            'category_uuid' => $this->getPropWhenLoaded('category', 'uuid'),
             'image' => $this->getPropWhenLoaded('image', 'path'),
             'updated_at' => $this->updated_at,
             'status' => $this->deleted_at ? 'inactive' : 'active',

@@ -23,10 +23,21 @@ class MenuCategoryRepository extends BaseRepository
         $sorts = ['name', 'updated_at'];
         $query = parent::index($filters, $sorts)->withCount('menus');
         if (request('q')) {
-            $query->where(function($q) {
+            $query->where(function ($q) {
                 $q->where('name', 'LIKE', '%' . request('q') . '%');
             });
         }
         return $query->paginate(request('limit', 15))->withQueryString();
+    }
+
+    public function listDropdown()
+    {
+        $query = parent::index([], []);
+        if (request('q')) {
+            $query->where(function ($q) {
+                $q->where('name', 'LIKE', '%' . request('q') . '%');
+            });
+        }
+        return $query->get();
     }
 }

@@ -61,7 +61,7 @@
                                                     </select>
                                                 </div>
                                             </div>
-                                            <div class="col-auto ms-auto align-self-end" id="addInventoryBtn" style="display: none;">
+                                            <div class="col-auto ms-auto align-self-end" id="addMenuBtn" style="display: none;">
                                                 <button data-bs-toggle="modal" data-bs-target="#primary"
                                                     class="btn btn-primary w-100 d-flex justify-content-center align-items-center">
                                                     <span class="me-2"><i class="bi bi-person-plus-fill"></i></span>Tambah menu
@@ -104,9 +104,9 @@
                     </div>
                 </div>
             </footer>
-            <x-add-inventory-modal></x-add-inventory-modal>
-            <x-edit-inventory-modal></x-edit-inventory-modal>
-            <x-inventory-histories-modal></x-inventory-histories-modal>
+            <x-add-menu-modal></x-add-menu-modal>
+            <x-edit-menu-modal></x-edit-menu-modal>
+            {{-- <x-inventory-histories-modal></x-inventory-histories-modal> --}}
         </div>
     </div>
     <script src="{{ asset('dist/assets/static/js/components/dark.js') }}"></script>
@@ -125,7 +125,7 @@
     <script src="{{ asset('dist/assets/extensions/flatpickr/l10n/id.js') }}"></script>
     {{-- Page JS --}}
     <script src="{{ asset('page-js/base.js') }}"></script>
-    <script src="{{ asset('page-js/inventory.js') }}"></script>
+    <script src="{{ asset('page-js/menu.js') }}"></script>
 </body>
 
 </html>

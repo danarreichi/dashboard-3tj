@@ -33,6 +33,11 @@ class MenuCategoryController extends Controller
         ]);
     }
 
+    public function dropdown()
+    {
+        return MenuCategoryResource::collection($this->repository->listDropdown());
+    }
+
     public function store(StoreMenuCategoryRequest $request)
     {
         $menuCategory = DB::transaction(function () use ($request) {
