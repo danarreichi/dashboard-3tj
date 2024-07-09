@@ -42,8 +42,28 @@
                         </div>
                     </form>
                 </div>
+                <hr>
                 <div class="table-responsive datatable-minimal">
-                    <form id="tempRecipeForm">
+                    <form id="tempRecipeForm" onsubmit="saveMenuPriceForm(this)">
+                        <div class="row mb-2 m-0">
+                            <div class="col-4 d-flex align-items-center">
+                                <span class="fw-semibold">HPP: Rp0</span>
+                            </div>
+                            <div class="col-8">
+                                <div class="row">
+                                    <div class="col-4 d-flex align-items-center justify-content-end">
+                                        <label for="price" class="mb-0">Harga Menu</label>
+                                    </div>
+                                    <div class="col-8">
+                                        <div class="input-group">
+                                            <span class="input-group-text">Rp</span>
+                                            <input type="number" min="1" name="price" id="price" class="form-control" placeholder="Masukkan harga" required>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <hr>
                         <table class="table" id="addMenuPriceTable">
                             <thead>
                                 <tr>
@@ -59,13 +79,13 @@
                             </tbody>
                         </table>
                         <hr>
-                        <button class="btn btn-success w-100">
+                        <button class="btn btn-success w-100" id="saveMenuPriceButton" style="display: none;">
                             <span>Simpan</span>
                         </button>
                     </form>
                 </div>
             </div>
-            <div class="modal-footer">
+            <div class="modal-footer d-flex justify-content-start">
                 <button class="btn btn-secondary" onclick="backToPriceModal()">
                     <span>Kembali</span>
                 </button>

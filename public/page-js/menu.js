@@ -282,7 +282,7 @@ function getPrices(element) {
                             return `<div class="accordion-item">
 								<h2 class="accordion-header" id="headingOne${meta.row + meta.settings._iDisplayStart + 1}">
 									<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse${meta.row + meta.settings._iDisplayStart + 1}" aria-expanded="false">
-									<span class="me-2 fw-semibold">${row.price}</span><span class="badge bg-light-${badge}">${row.status}</span>
+									<span class="me-2 fw-bold">${row.price}</span><span class="badge bg-light-${badge}">${row.status}</span>
 									</button>
 								</h2>
 								<div id="collapse${meta.row + meta.settings._iDisplayStart + 1}" class="accordion-collapse collapse" style="">
@@ -363,7 +363,6 @@ function getInventoryHistoryDropdown(inventoryUuid) {
             selectElement.append(
                 '<option value="" style="display: none;" disabled selected>Pilih harga restock terbaru</option>'
             );
-
             response.data.forEach(function (item, index) {
                 selectElement.append(`<option value="${item.uuid}">${item.price}</option>`);
             });
@@ -382,6 +381,7 @@ function changeUnitPlaceholder(element) {
 function addPrice(element) {
     $('#successPrices').modal('hide');
     $('#addMenuPriceTable tbody').empty();
+    $('#saveMenuPriceButton').hide();
     getInventoryDropdown();
     $('#successAddMenuPrice').modal('show');
 }
@@ -403,13 +403,13 @@ function addRecipeTemp(element) {
                 <td>${inventoryName}</td>
                 <td>${attributes[1].value}${inventoryUnit}</td>
                 <td>
-                    <select id="${attributes[0].value}" name="inventory_history[]" class="form-control">
+                    <select id="${attributes[0].value}" name="inventory_history[]" class="form-control" required>
                         <option style="display: none;" selected>Pilih harga restock terbaru</option>
                     </select>
                 </td>
                 <input type="hidden" id="inventoryUuid" value="${attributes[0].value}" name="inventory_uuid[]">
                 <input type="hidden" id="qty" value="${attributes[1].value}" name="qty[]">
-                <td><button type="button" onclick="removeRow(this)" class="removeRow btn btn-danger">Hapus</button></td>
+                <td><button type="button" onclick="removeRow(this)" class="removeRow btn btn-danger w-100">Hapus</button></td>
                 </tr>`;
 
     getInventoryHistoryDropdown(attributes[0].value);
@@ -418,6 +418,45 @@ function addRecipeTemp(element) {
     $('#addMenuPriceTable tbody').append(newRow);
     let excludedInventories = $('#tempRecipeForm').serializeArray('inventory_uuid').filter(item => item.name === 'inventory_uuid[]').map(item => item.value);
     getInventoryDropdown(`excludes=${excludedInventories}`);
+    $('#saveMenuPriceButton').show();
+}
+
+function saveMenuPriceForm(element) {
+    event.preventDefault();
+    let attributes = $('#' + element.id).serializeArray();
+
+    let recipes = [];
+    let price = 0;
+    let historyCount = 0;
+
+    attributes.forEach(item => {
+        if (item.name === "price") price = item.value;
+        if (item.name === "inventory_history[]") recipes.push({ uuid: item.value });
+        if (item.name === "qty[]") {
+            recipes[historyCount].qty = item.value;
+            historyCount++;
+        }
+    });
+
+    let result = { price: price, recipes: recipes };
+    console.log(result);
+
+    var headers = {
+        'Authorization': 'Bearer ' + localStorage.getItem("bearer")
+    };
+    // $.ajax({
+    //     url: host + 'inventory/' + $('#' + element.id).serializeArray()[0].value,
+    //     type: 'PUT',
+    //     data: $('#' + element.id).serializeArray(),
+    //     headers: headers,
+    //     success: function (response) {
+
+    //     },
+    //     error: function (xhr, status, error) {
+
+    //         console.error(JSON.parse(xhr.responseText).message);
+    //     }
+    // });
 }
 
 function updateRowNumbers() {
