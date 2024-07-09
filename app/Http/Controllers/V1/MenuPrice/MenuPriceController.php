@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\V1\MenuPrice;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Console\V1\StoreMenuPriceRequest;
 use App\Http\Requests\Console\V1\StoreMenuRequest;
 use App\Http\Requests\Console\V1\UpdateMenuRequest;
 use App\Http\Resources\Console\V1\MenuPriceResource;
@@ -38,9 +39,9 @@ class MenuPriceController extends Controller
         ]);
     }
 
-    public function store(StoreMenuRequest $request)
+    public function store(StoreMenuPriceRequest $request)
     {
-
+        return $request;
     }
 
     public function show(Menu $menu, MenuPrice $menuPrice)

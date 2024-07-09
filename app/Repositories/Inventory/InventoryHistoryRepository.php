@@ -30,6 +30,12 @@ class InventoryHistoryRepository extends BaseRepository
         return [$query->paginate(request('limit', 15))->withQueryString(), $dateMin, $dateMax];
     }
 
+    public function listDropdownByInventory(Inventory $inventory)
+    {
+        $query = parent::index()->where('inventory_id', $inventory->id)->where('status', InventoryHistory::STATUS_IN)->orderByDesc('id');
+        return $query->limit(5)->get();
+    }
+
     public function listByInventory(Inventory $inventory)
     {
         $filters = [AllowedFilter::scope('start_between')];

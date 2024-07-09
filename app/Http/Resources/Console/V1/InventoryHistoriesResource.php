@@ -4,6 +4,7 @@ namespace App\Http\Resources\Console\V1;
 
 use App\Traits\RelationShortcut;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Http\Resources\MissingValue;
 
 class InventoryHistoriesResource extends JsonResource
 {
@@ -18,7 +19,7 @@ class InventoryHistoriesResource extends JsonResource
     public function toArray($request)
     {
         return [
-            'name' => $this->getPropWhenLoaded('user', 'name'),
+            'name' => $this->getPropWhenLoaded('user', 'name') ?? new MissingValue,
             'status' => $this->status,
             'qty' => $this->qty . $this->getPropWhenLoaded('inventory', 'unit'),
             'price' => "Rp" . number_format($this->price, 2, ",", "."),

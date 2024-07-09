@@ -72,6 +72,32 @@ function getMenuCategoryDropdown(type) {
     });
 }
 
+function getInventoryDropdown(excludes) {
+    var headers = {
+        'Authorization': 'Bearer ' + localStorage.getItem("bearer")
+    };
+    $.ajax({
+        url: host + "dropdown/inventory" + (excludes ? `?${excludes}` : ''),
+        type: 'GET',
+        headers: headers,
+        body: body,
+        success: function (response) {
+            var selectElement = $('#inventories');
+            selectElement.empty(); // Clear existing options
+            selectElement.append(
+                '<option value="" style="display: none;" disabled selected>Pilih bahan yang dibutuhkan</option>'
+            );
+
+            response.data.forEach(function (item, index) {
+                selectElement.append(`<option value="${item.uuid}" data-name="${item.name}" data-unit="${item.unit}">${item.name}</option>`);
+            });
+        },
+        error: function (xhr, status, error) {
+            console.error(JSON.parse(xhr.responseText).message);
+        }
+    });
+}
+
 function addMenu(element) {
     event.preventDefault();
     var headers = {
@@ -234,6 +260,7 @@ function getPrices(element) {
         data: queryParams,
         headers: headers,
         success: function (response) {
+            document.getElementById('addRecipeForm').setAttribute('data-uuid', element.dataset.uuid);
             $('#modalMenuName').html(response.meta.menu_name);
             menuPricesTable = $('#menuPricesTable').DataTable({
                 columns: [
@@ -318,6 +345,92 @@ function getPrices(element) {
             console.error(JSON.parse(xhr.responseText).message);
         }
     });
+}
+
+function getInventoryHistoryDropdown(inventoryUuid) {
+    var queryParams = {};
+    var headers = {
+        'Authorization': 'Bearer ' + localStorage.getItem("bearer")
+    };
+    $.ajax({
+        url: host + 'dropdown/inventory/' + inventoryUuid + '/history',
+        type: 'GET',
+        data: queryParams,
+        headers: headers,
+        success: function (response) {
+            var selectElement = $(`#${inventoryUuid}`);
+            selectElement.empty(); // Clear existing options
+            selectElement.append(
+                '<option value="" style="display: none;" disabled selected>Pilih harga restock terbaru</option>'
+            );
+
+            response.data.forEach(function (item, index) {
+                selectElement.append(`<option value="${item.uuid}">${item.price}</option>`);
+            });
+        },
+        error: function (xhr, status, error) {
+            console.error(JSON.parse(xhr.responseText).message);
+        }
+    });
+}
+
+function changeUnitPlaceholder(element) {
+    var selectedOption = $('#' + element.id).find(':selected');
+    $('#unitPlaceholder').html(selectedOption.data('unit'));
+}
+
+function addPrice(element) {
+    $('#successPrices').modal('hide');
+    $('#addMenuPriceTable tbody').empty();
+    getInventoryDropdown();
+    $('#successAddMenuPrice').modal('show');
+}
+
+function backToPriceModal() {
+    $('#successAddMenuPrice').modal('hide');
+    $('#successPrices').modal('show');
+}
+
+function addRecipeTemp(element) {
+    event.preventDefault();
+    let attributes = $('#' + element.id).serializeArray();
+    var selectedOption = $('#inventories').find(':selected');
+    var inventoryName = selectedOption.data('name');
+    var inventoryUnit = selectedOption.data('unit');
+    var rowCount = $('#addMenuPriceTable tbody tr').length + 1;
+    var newRow = `<tr>
+                <td class="row-number">${rowCount}</td>
+                <td>${inventoryName}</td>
+                <td>${attributes[1].value}${inventoryUnit}</td>
+                <td>
+                    <select id="${attributes[0].value}" name="inventory_history[]" class="form-control">
+                        <option style="display: none;" selected>Pilih harga restock terbaru</option>
+                    </select>
+                </td>
+                <input type="hidden" id="inventoryUuid" value="${attributes[0].value}" name="inventory_uuid[]">
+                <input type="hidden" id="qty" value="${attributes[1].value}" name="qty[]">
+                <td><button type="button" onclick="removeRow(this)" class="removeRow btn btn-danger">Hapus</button></td>
+                </tr>`;
+
+    getInventoryHistoryDropdown(attributes[0].value);
+    clearForm(element.id);
+    $('#unitPlaceholder').html('');
+    $('#addMenuPriceTable tbody').append(newRow);
+    let excludedInventories = $('#tempRecipeForm').serializeArray('inventory_uuid').filter(item => item.name === 'inventory_uuid[]').map(item => item.value);
+    getInventoryDropdown(`excludes=${excludedInventories}`);
+}
+
+function updateRowNumbers() {
+    $('#addMenuPriceTable tbody tr').each(function (index) {
+        $(this).find('.row-number').text(index + 1);
+    });
+}
+
+function removeRow(element) {
+    $(element).closest('tr').remove();
+    updateRowNumbers();
+    let excludedInventories = $('#tempRecipeForm').serializeArray('inventory_uuid').filter(item => item.name === 'inventory_uuid[]').map(item => item.value);
+    getInventoryDropdown(`excludes=${excludedInventories}`);
 }
 
 function editMenu(element) {

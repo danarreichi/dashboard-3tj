@@ -107,6 +107,7 @@
             <x-add-menu-modal></x-add-menu-modal>
             <x-edit-menu-modal></x-edit-menu-modal>
             <x-menu-prices-modal></x-menu-prices-modal>
+            <x-add-menu-price-modal></x-add-menu-price-modal>
         </div>
     </div>
     <script src="{{ asset('dist/assets/static/js/components/dark.js') }}"></script>

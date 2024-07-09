@@ -11,9 +11,10 @@
                 </div>
             </div>
             <div class="modal-body">
-                <div class="row">
-                    <label for="modal_menu_name" class="form-label mb-1 col-6">Nama menu: <span
-                            class="fw-semibold" id="modalMenuName"></span></label>
+                <div class="col d-flex align-items-center">
+                    <label for="modal_menu_name" class="form-label mb-1 col-9">Nama menu: <span class="fw-semibold"
+                            id="modalMenuName"></span></label>
+                    <button class="btn btn-success col-3" onclick="addPrice(this)"> Tambah harga </button>
                 </div>
                 <hr>
                 <div class="table-responsive datatable-minimal">

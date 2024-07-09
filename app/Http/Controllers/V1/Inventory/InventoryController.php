@@ -119,4 +119,15 @@ class InventoryController extends Controller
             ]
         ]);
     }
+
+    public function dropdownHistory(Inventory $inventory)
+    {
+        $data = $this->inventoryHistoryRepository->listDropdownByInventory($inventory);
+        return InventoryHistoriesResource::collection($data);
+    }
+
+    public function dropdown()
+    {
+        return InventoryResource::collection($this->repository->listDropdown());
+    }
 }
