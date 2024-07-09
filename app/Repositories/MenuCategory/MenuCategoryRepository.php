@@ -32,7 +32,7 @@ class MenuCategoryRepository extends BaseRepository
 
     public function listDropdown()
     {
-        $query = parent::index([], []);
+        $query = parent::index();
         if (request('q')) {
             $query->where(function ($q) {
                 $q->where('name', 'LIKE', '%' . request('q') . '%');

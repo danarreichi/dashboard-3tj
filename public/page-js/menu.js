@@ -2,6 +2,7 @@ const apiHost = window.location.hostname;
 const apiPort = window.location.port;
 const host = `http://${apiHost}:${apiPort}/api/console/v1/`;
 const pageHost = `http://${apiHost}:${apiPort}/`;
+var menuPricesTable;
 
 $(document).ready(function () {
     getProfile();
@@ -144,10 +145,11 @@ let customized_datatable = $('#menuTable').DataTable({
             width: "28%",
             render: function (data, type, row) {
                 let editButton = '<button onclick="getMenu(this)" data-uuid="' + row.uuid + '" class="btn btn-secondary d-flex justify-content-center align-items-center"> <span class="me-2"><i class="bi bi-pencil-square"></i></i></span>Ubah</button>';
+                let pricesButton = '<button onclick="getPrices(this)" data-uuid="' + row.uuid + '" class="btn btn-success d-flex justify-content-center align-items-center"> <span class="me-2"><i class="bi bi-cash-coin"></i></i></i></span>Daftar Harga</button>';
                 let unBanButton = '<button onclick="restoreMenu(this)" data-uuid="' + row.uuid + '" class="btn btn-danger d-flex justify-content-center align-items-center"> <span class="me-2"><i class="bi bi-unlock"></i></i></span>Restore</button>';
                 let grouped = '<div class="d-flex gap-2">' +
                     ((metaValue.logined_role === 'admin') ?
-                        ((row.status === 'active') ? editButton : unBanButton) : '') +
+                        ((row.status === 'active') ? editButton + pricesButton : unBanButton) : '') +
                     '</div>';
                 return grouped;
             }
@@ -211,6 +213,106 @@ function getMenu(element) {
             $('#menuCategoryIdEdit').val(response.data.category_uuid);
             $('#delete').attr('data-uuid', response.data.uuid);
             $('#secondaryEdit').modal('show');
+        },
+        error: function (xhr, status, error) {
+            console.error(JSON.parse(xhr.responseText).message);
+        }
+    });
+}
+
+function getPrices(element) {
+    if ($.fn.DataTable.isDataTable('#menuPricesTable')) {
+        $('#menuPricesTable').DataTable().clear().destroy();
+    }
+    var queryParams = {};
+    var headers = {
+        'Authorization': 'Bearer ' + localStorage.getItem("bearer")
+    };
+    $.ajax({
+        url: host + 'menu/' + element.dataset.uuid + '/price',
+        type: 'GET',
+        data: queryParams,
+        headers: headers,
+        success: function (response) {
+            $('#modalMenuName').html(response.meta.menu_name);
+            menuPricesTable = $('#menuPricesTable').DataTable({
+                columns: [
+                    {
+                        data: null,
+                        render: function (data, type, row, meta) {
+                            return meta.row + meta.settings._iDisplayStart + 1;
+                        }
+                    },
+                    {
+                        data: null,
+                        width: "95%",
+                        render: function (data, type, row, meta) {
+                            let recipes = row.recipes.map(recipe => {
+                                return `<button type="button" class="list-group-item list-group-item-action d-flex justify-content-between"><span>${recipe.name}</span><span class="fw-semibold">${recipe.qty}${recipe.unit} @${recipe.per_serving_price}</span></button>`;
+                            }).join('');
+                            let setActiveBtn = (row.status !== 'active') ? `<button class="btn btn-success w-100 mb-2 btn-sm" data-menu-uuid="${metaValue.menu_uuid}" data-uuid="${row.uuid}" onclick="activatePrice(this)">Aktifkan harga</button>` : '';
+                            let badge = (row.status === 'active') ? 'success' : 'danger';
+                            return `<div class="accordion-item">
+								<h2 class="accordion-header" id="headingOne${meta.row + meta.settings._iDisplayStart + 1}">
+									<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse${meta.row + meta.settings._iDisplayStart + 1}" aria-expanded="false">
+									<span class="me-2 fw-semibold">${row.price}</span><span class="badge bg-light-${badge}">${row.status}</span>
+									</button>
+								</h2>
+								<div id="collapse${meta.row + meta.settings._iDisplayStart + 1}" class="accordion-collapse collapse" style="">
+									<div class="accordion-body">
+                                        ${setActiveBtn}
+                                        <div class="list-group">
+                                            ${recipes}
+                                        <hr>
+                                        <button type="button" class="list-group-item list-group-item-action d-flex justify-content-end"><span class="fw-semibold">HPP: ${row.total_per_serving_price}</span></button>
+                                        </div>
+									</div>
+								</div>
+							</div>`;
+                        }
+                    },
+                ],
+                ajax: {
+                    url: host + 'menu/' + element.dataset.uuid + '/price',
+                    headers: {
+                        'Authorization': 'Bearer ' + localStorage.getItem("bearer")
+                    },
+                    data: function (d) {
+                        let filter = {};
+                        return {
+                            q: d.search.value,
+                            filter: filter,
+                            page: (d.start / d.length) + 1,
+                            limit: d.length,
+                        };
+                    },
+                    dataFilter: function (callBack) {
+                        var json = jQuery.parseJSON(callBack);
+
+                        json.recordsTotal = json.meta.total;
+                        json.recordsFiltered = json.meta.total;
+
+                        $('#successPrices').modal('show');
+                        metaValue = json.meta;
+                        json.data = json.data;
+                        return JSON.stringify(json);
+                    },
+                    error: function (xhr, errorType, exception) {
+                        console.error('Error fetching data:', exception);
+                    },
+                    cache: true,
+                },
+                paging: true,
+                pageLength: 5, // Default number of rows per page
+                lengthMenu: [5, 10, 25, 50, 100], // Options for rows per page
+                responsive: true,
+                autoWidth: false,
+                lengthChange: true,
+                ordering: false,
+                processing: true,
+                serverSide: true,
+                language: dataTablesIdLang
+            });
         },
         error: function (xhr, status, error) {
             console.error(JSON.parse(xhr.responseText).message);
@@ -329,6 +431,42 @@ function restoreMenu(element) {
                         timer: 1500
                     });
                     customized_datatable.ajax.reload();
+                },
+                error: function (xhr, status, error) {
+                    console.error(JSON.parse(xhr.responseText).message);
+                }
+            });
+        } else if (result.dismiss === Swal.DismissReason.cancel) {
+            console.log('Operation cancelled');
+        }
+    });
+}
+
+function activatePrice(element) {
+    Swal2.fire({
+        icon: "question",
+        title: "Apakah anda yakin?",
+        text: "Apakah anda yakin mengaktifkan harga ini?",
+        showCancelButton: true,
+        confirmButtonText: 'Ya',
+        cancelButtonText: 'Tidak',
+        reverseButtons: false // optional, makes the "No" button come first
+    }).then((result) => {
+        if (result.isConfirmed) {
+            var headers = {
+                'Authorization': 'Bearer ' + localStorage.getItem("bearer")
+            };
+            $.ajax({
+                url: host + 'menu/' + element.dataset.menuUuid + '/price/' + element.dataset.uuid + '/activate',
+                type: 'GET',
+                headers: headers,
+                success: function (response) {
+                    Toast.fire({
+                        icon: 'success',
+                        title: 'Harga berhasil diaktifkan',
+                        timer: 1500
+                    });
+                    menuPricesTable.ajax.reload();
                 },
                 error: function (xhr, status, error) {
                     console.error(JSON.parse(xhr.responseText).message);
