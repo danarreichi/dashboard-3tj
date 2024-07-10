@@ -39,9 +39,14 @@ class MenuPriceController extends Controller
         ]);
     }
 
-    public function store(StoreMenuPriceRequest $request)
+    public function store(Menu $menu, StoreMenuPriceRequest $request)
     {
-        return $request;
+        $data = DB::transaction(function() use ($menu, $request) {
+            $menuPrice = $this->repository->insertPriceAndRecipes($menu, $request->validated());
+            $menuPrice->load('recipes');
+            return $menuPrice;
+        });
+        return $data;
     }
 
     public function show(Menu $menu, MenuPrice $menuPrice)

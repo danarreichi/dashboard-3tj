@@ -15,6 +15,8 @@ class MenuPrice extends BaseModel
 
         static::creating(function ($model) {
             $model->uuid = Str::uuid()->toString();
+            $model->revision = ($model->where('menu_id', $model->menu_id)->max('revision') ?? 0)  + 1;
+            $model->status = 'inactive';
         });
     }
 

@@ -260,7 +260,7 @@ function getPrices(element) {
         data: queryParams,
         headers: headers,
         success: function (response) {
-            document.getElementById('addRecipeForm').setAttribute('data-uuid', element.dataset.uuid);
+            document.getElementById('tempRecipeForm').setAttribute('data-uuid', element.dataset.uuid);
             $('#modalMenuName').html(response.meta.menu_name);
             menuPricesTable = $('#menuPricesTable').DataTable({
                 columns: [
@@ -364,13 +364,39 @@ function getInventoryHistoryDropdown(inventoryUuid) {
                 '<option value="" style="display: none;" disabled selected>Pilih harga restock terbaru</option>'
             );
             response.data.forEach(function (item, index) {
-                selectElement.append(`<option value="${item.uuid}">${item.price}</option>`);
+                selectElement.append(`<option value="${item.uuid}" data-price-per-unit="${item.price_per_unit}">${item.price}</option>`);
             });
         },
         error: function (xhr, status, error) {
             console.error(JSON.parse(xhr.responseText).message);
         }
     });
+}
+
+const rupiah = (number) => {
+    return new Intl.NumberFormat("id-ID", {
+        style: "currency",
+        currency: "IDR"
+    }).format(number);
+}
+
+// var HPP = 0;
+function calculateHpp() {
+    let HPP = 0;
+    if ($('[name="inventory_history[]"]').length === 0) {
+        $('#hppPlaceholder').html(`HPP: ${rupiah(HPP)}`);
+        return; // Exit function early if there are no elements
+    }
+    $('[name="inventory_history[]"]').each(function () {
+        var selectedOption = $(this).find('option:selected');
+        var pricePerUnit = selectedOption.data('price-per-unit') ? selectedOption.data('price-per-unit') : 0;
+
+        // Find the nearest <tr> element
+        var row = $(this).closest('tr');
+        var qty = parseFloat(row.find('input[name="qty[]"]').val());
+        HPP = HPP + (pricePerUnit * qty);
+    });
+    $('#hppPlaceholder').html(`HPP: ${rupiah(HPP)}`);
 }
 
 function changeUnitPlaceholder(element) {
@@ -383,6 +409,7 @@ function addPrice(element) {
     $('#addMenuPriceTable tbody').empty();
     $('#saveMenuPriceButton').hide();
     getInventoryDropdown();
+    calculateHpp();
     $('#successAddMenuPrice').modal('show');
 }
 
@@ -403,12 +430,12 @@ function addRecipeTemp(element) {
                 <td>${inventoryName}</td>
                 <td>${attributes[1].value}${inventoryUnit}</td>
                 <td>
-                    <select id="${attributes[0].value}" name="inventory_history[]" class="form-control" required>
+                    <select id="${attributes[0].value}" data-group="${attributes[0].value}" onchange="calculateHpp()" name="inventory_history[]" class="form-control" required>
                         <option style="display: none;" selected>Pilih harga restock terbaru</option>
                     </select>
                 </td>
-                <input type="hidden" id="inventoryUuid" value="${attributes[0].value}" name="inventory_uuid[]">
-                <input type="hidden" id="qty" value="${attributes[1].value}" name="qty[]">
+                <input type="hidden" id="inventoryUuid" value="${attributes[0].value}" data-group="${attributes[0].value}" name="inventory_uuid[]">
+                <input type="hidden" id="qty" value="${attributes[1].value}" data-group="${attributes[0].value}" name="qty[]">
                 <td><button type="button" onclick="removeRow(this)" class="removeRow btn btn-danger w-100">Hapus</button></td>
                 </tr>`;
 
@@ -423,40 +450,94 @@ function addRecipeTemp(element) {
 
 function saveMenuPriceForm(element) {
     event.preventDefault();
-    let attributes = $('#' + element.id).serializeArray();
+    // Step 1: Find how many groups are there
+    let groups = {};
+    $('[data-group]').each(function () {
+        let groupName = $(this).data('group');
+        groups[groupName] = true; // Use an object to collect unique group names
+    });
+
+    let groupNames = Object.keys(groups); // Array of unique group names
+    let groupedAttributes = {};
+
+    groupNames.forEach(function (groupName, index) {
+        groupedAttributes[index] = [];
+
+        $('[data-group="' + groupName + '"]').each(function () {
+            let fieldName = $(this).attr('name');
+            let value = $(this).val();
+            groupedAttributes[index].push({ name: fieldName, value: value, group: groupName });
+        });
+    });
 
     let recipes = [];
-    let price = 0;
-    let historyCount = 0;
+    let price = $(`#${element.id}`).find('input[name="price"]').val();
+    Object.keys(groupedAttributes).forEach(index => {
+        let uuidItem = groupedAttributes[index].find(item => item.name === 'inventory_history[]');
+        let qtyItem = groupedAttributes[index].find(item => item.name === 'qty[]');
 
-    attributes.forEach(item => {
-        if (item.name === "price") price = item.value;
-        if (item.name === "inventory_history[]") recipes.push({ uuid: item.value });
-        if (item.name === "qty[]") {
-            recipes[historyCount].qty = item.value;
-            historyCount++;
+        // Push a new recipe object into recipes array
+        if (uuidItem && qtyItem) {
+            let recipe = {
+                uuid: uuidItem.value,
+                qty: qtyItem.value
+            };
+
+            // Remove null values from recipe object
+            recipe = Object.fromEntries(
+                Object.entries(recipe).filter(([_, v]) => v != null)
+            );
+
+            recipes.push(recipe);
         }
     });
 
-    let result = { price: price, recipes: recipes };
-    console.log(result);
+    let dataObject = { recipes: recipes };
+    if (price) dataObject.price = price;
 
     var headers = {
         'Authorization': 'Bearer ' + localStorage.getItem("bearer")
     };
-    // $.ajax({
-    //     url: host + 'inventory/' + $('#' + element.id).serializeArray()[0].value,
-    //     type: 'PUT',
-    //     data: $('#' + element.id).serializeArray(),
-    //     headers: headers,
-    //     success: function (response) {
+    $.ajax({
+        url: host + `menu/${element.dataset.uuid}/price`,
+        type: 'POST',
+        data: dataObject,
+        headers: headers,
+        success: function (response) {
+            clearInputErrors();
+            Toast.fire({
+                icon: 'success',
+                title: 'Harga menu berhasil ditambahkan',
+                timer: 1500
+            });
+            menuPricesTable.ajax.reload();
+            backToPriceModal();
+        },
+        error: function (xhr, status, error) {
+            clearInputErrors();
+            if (xhr.responseJSON) {
+                $.each(xhr.responseJSON.errors, function (fieldName, errorMessage) {
+                    if (fieldName === "price") {
+                        var inputField = $('[name="' + fieldName + '"]');
+                        inputField.addClass('is-invalid');
+                        inputField.after('<div class="invalid-feedback">' + errorMessage + '</div>');
+                    }
+                    if (fieldName.includes("recipes") && fieldName.includes("uuid")) {
+                        let iteration = parseInt(fieldName.split(".")[1]);
 
-    //     },
-    //     error: function (xhr, status, error) {
-
-    //         console.error(JSON.parse(xhr.responseText).message);
-    //     }
-    // });
+                        $('[name="inventory_history[]"]').each(function (index, element) {
+                            if (index === iteration) {
+                                let inputField = $(element);
+                                inputField.addClass('is-invalid');
+                                inputField.after('<div class="invalid-feedback">Pilihan tidak boleh kosong</div>');
+                            }
+                        });
+                    }
+                });
+            }
+            console.error(JSON.parse(xhr.responseText).message);
+        }
+    });
 }
 
 function updateRowNumbers() {
@@ -468,6 +549,7 @@ function updateRowNumbers() {
 function removeRow(element) {
     $(element).closest('tr').remove();
     updateRowNumbers();
+    calculateHpp();
     let excludedInventories = $('#tempRecipeForm').serializeArray('inventory_uuid').filter(item => item.name === 'inventory_uuid[]').map(item => item.value);
     getInventoryDropdown(`excludes=${excludedInventories}`);
 }

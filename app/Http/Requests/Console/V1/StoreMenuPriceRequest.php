@@ -29,7 +29,8 @@ class StoreMenuPriceRequest extends FormRequest
         return [
             'price' => ['numeric', 'required', 'min:1'],
             'recipes' => ['required', 'array'],
-            'recipes.*.uuid' => ['required', 'distinct', Rule::exists('inventory_histories', 'uuid')]
+            'recipes.*.uuid' => ['required', 'distinct', Rule::exists('inventory_histories', 'uuid')],
+            'recipes.*.qty' => ['required', 'numeric', 'min:1']
         ];
     }
 }

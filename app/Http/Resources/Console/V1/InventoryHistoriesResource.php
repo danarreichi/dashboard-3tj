@@ -24,6 +24,7 @@ class InventoryHistoriesResource extends JsonResource
             'status' => $this->status,
             'qty' => $this->qty . $this->getPropWhenLoaded('inventory', 'unit'),
             'price' => "Rp" . number_format($this->price, 2, ",", "."),
+            'price_per_unit' => round(($this->price / $this->qty), 2),
             'old_qty' => $this->payload['old_qty'] . $this->getPropWhenLoaded('inventory', 'unit'),
             'new_qty' => $this->payload['new_qty'] . $this->getPropWhenLoaded('inventory', 'unit'),
             'created_at' => $this->created_at,

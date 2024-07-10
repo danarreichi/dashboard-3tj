@@ -27,7 +27,7 @@
                                         <div class="col-5">
                                             <label for="price" class="form-label">Jumlah</label>
                                             <div class="input-group">
-                                                <input type="number" name="price" min="1" class="form-control" placeholder="Masukkan jumlah yang dibutuhkan" required>
+                                                <input type="number" name="qtyTemp" min="1" class="form-control" placeholder="Masukkan jumlah yang dibutuhkan" required>
                                                 <span class="input-group-text" id="unitPlaceholder"></span>
                                             </div>
                                         </div>
@@ -47,7 +47,7 @@
                     <form id="tempRecipeForm" onsubmit="saveMenuPriceForm(this)">
                         <div class="row mb-2 m-0">
                             <div class="col-4 d-flex align-items-center">
-                                <span class="fw-semibold">HPP: Rp0</span>
+                                <span class="fw-semibold" id="hppPlaceholder">HPP: Rp0</span>
                             </div>
                             <div class="col-8">
                                 <div class="row">
