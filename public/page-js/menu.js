@@ -700,7 +700,10 @@ function activatePrice(element) {
                         title: 'Harga berhasil diaktifkan',
                         timer: 1500
                     });
-                    menuPricesTable.ajax.reload();
+                    let lastPage = menuPricesTable.page();
+                    menuPricesTable.ajax.reload(function () {
+                        menuPricesTable.page(lastPage).draw(false);
+                    });
                 },
                 error: function (xhr, status, error) {
                     console.error(JSON.parse(xhr.responseText).message);
