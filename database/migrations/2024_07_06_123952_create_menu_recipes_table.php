@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('menu_recipes', function (Blueprint $table) {
             $table->id();
+            $table->uuid('uuid')->index();
             $table->foreignId('menu_price_id')->constrained();
             $table->foreignId('inventory_history_id')->constrained();
             $table->decimal('qty', 10, 2);
@@ -25,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('menu_recipe_details');
+        Schema::dropIfExists('menu_recipes');
     }
 };

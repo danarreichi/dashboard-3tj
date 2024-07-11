@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('inventory_histories', function (Blueprint $table) {
             $table->id();
+            $table->uuid('uuid')->index();
             $table->foreignId('inventory_id')->constrained();
             $table->foreignId('user_id')->constrained();
             $table->string('status'); //in and out only

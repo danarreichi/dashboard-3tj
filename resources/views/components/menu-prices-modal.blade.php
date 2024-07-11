@@ -6,7 +6,7 @@
             <div class="modal-header bg-success">
                 <div class="d-flex flex-row flex-grow-1 w-25 justify-content-center align-items-center">
                     <h5 class="modal-title text-white" id="myModalLabel160">
-                        <i style="font-size: 1.2rem;" class="bi bi-cash-coin me-2"></i>Daftar Harga
+                        <i style="font-size: 1.2rem;" class="bi bi-cash-coin me-2"></i>Daftar Harga & Bahan
                     </h5>
                 </div>
             </div>
