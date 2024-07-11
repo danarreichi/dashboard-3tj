@@ -37,6 +37,8 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('menu/{menu}/price/{price}/activate', [V1\MenuPrice\MenuPriceController::class, 'activate'])->name('menu-price-activate');
     Route::get('menu/{menu}/restore', [V1\Menu\MenuController::class, 'restore'])->name('menu-restore');
 
+    Route::get('menu-price', [V1\MenuPrice\MenuPriceController::class, 'listActivePrice'])->name('menu-price-list');
+
     Route::get('dropdown/menu-category', [V1\MenuCategory\MenuCategoryController::class, 'dropdown'])->name('dropdown-menu-category');
     Route::get('dropdown/inventory', [V1\Inventory\InventoryController::class, 'dropdown'])->name('dropdown-inventory');
     Route::get('dropdown/inventory/{inventory}/history', [V1\Inventory\InventoryController::class, 'dropdownHistory'])->name('dropdown-inventory-history');

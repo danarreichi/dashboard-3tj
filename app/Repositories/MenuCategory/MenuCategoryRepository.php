@@ -22,6 +22,9 @@ class MenuCategoryRepository extends BaseRepository
         $filters = [AllowedFilter::trashed()];
         $sorts = ['name', 'updated_at'];
         $query = parent::index($filters, $sorts)->withCount('menus');
+        if (request('hasMenu')) $query->whereHas('menus', function($q) {
+            $q->whereHas('prices', fn($q) => $q->where('status', 'active'));
+        });
         if (request('q')) {
             $query->where(function ($q) {
                 $q->where('name', 'LIKE', '%' . request('q') . '%');

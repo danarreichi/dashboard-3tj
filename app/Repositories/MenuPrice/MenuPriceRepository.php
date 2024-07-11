@@ -55,6 +55,17 @@ class MenuPriceRepository extends BaseRepository
         return $menuPrice;
     }
 
+    public function listActivePrice()
+    {
+        $data = parent::index()->whereHas('menu', function($q){
+            $q->when(request('q'), fn($q) => $q->where('name', 'LIKE', '%' . request('q') . '%'));
+            $q->when(request('category_uuid'), function($q){
+                $q->whereHas('category', fn($q) => $q->where('uuid', request('category_uuid')));
+            });
+        })->with('menu')->where('status', 'active')->get();
+        return $data;
+    }
+
     public function activatePrice(Menu $menu, MenuPrice $price)
     {
         parent::index()->whereHas('menu', fn ($q) => $q->where('id', $menu->id))->update(['status' => 'inactive']);

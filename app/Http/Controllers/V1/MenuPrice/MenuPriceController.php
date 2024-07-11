@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Console\V1\StoreMenuPriceRequest;
 use App\Http\Requests\Console\V1\StoreMenuRequest;
 use App\Http\Requests\Console\V1\UpdateMenuRequest;
+use App\Http\Resources\Console\V1\ActiveMenuPriceResource;
 use App\Http\Resources\Console\V1\MenuPriceResource;
 use App\Http\Resources\Console\V1\MenuResource;
 use App\Models\Menu;
@@ -47,6 +48,12 @@ class MenuPriceController extends Controller
             return $menuPrice;
         });
         return $data;
+    }
+
+    public function listActivePrice()
+    {
+        $data = $this->repository->listActivePrice();
+        return ActiveMenuPriceResource::collection($data);
     }
 
     public function show(Menu $menu, MenuPrice $menuPrice)

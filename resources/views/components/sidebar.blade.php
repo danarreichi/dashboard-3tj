@@ -43,7 +43,7 @@
         </div>
         <div class="sidebar-menu">
             <ul class="menu">
-                <li class="sidebar-title">Menu</li>
+                <li class="sidebar-title">Database</li>
 
                 <li class="sidebar-item {{ request()->routeIs('inventory') ? 'active' : '' }}">
                     <a href="/inventory" class='sidebar-link'>
@@ -63,6 +63,15 @@
                     <a href="menu" class='sidebar-link'>
                         <i class="bi bi-journals"></i>
                         <span>Menu</span>
+                    </a>
+                </li>
+
+                <li class="sidebar-title">Kasir</li>
+
+                <li class="sidebar-item {{ request()->routeIs('order') ? 'active' : '' }}">
+                    <a href="order" class='sidebar-link'>
+                        <i class="bi bi-cart"></i>
+                        <span>Pesan</span>
                     </a>
                 </li>
 
