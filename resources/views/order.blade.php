@@ -43,9 +43,6 @@
         }
 
         .menu-card:focus {
-            text-shadow:
-                /* -1px 1px 0 #2DD785,
-                1px 1px 0 #2DD785; */
             transition: all 300ms;
             color: #1e1e2d !important;
             background-color: #00ffb3 !important;
@@ -53,9 +50,6 @@
 
         .menu-card.clicked {
             transform: translateY(4px);
-            text-shadow:
-                /* -1px 1px 0 #2DD785,
-                1px 1px 0 #2DD785; */
             transition: all 300ms;
             color: #1e1e2d !important;
             background-color: #00ffb3 !important;
@@ -70,6 +64,19 @@
             transition: all 300ms;
             font-weight: 700;
             transform: translateY(4px);
+        }
+
+        #kategoriMenu {
+            overflow-x: scroll;
+            -ms-overflow-style: none;
+            /* Internet Explorer 10+ */
+            scrollbar-width: none;
+            /* Firefox */
+        }
+
+        #kategoriMenu::-webkit-scrollbar {
+            display: none;
+            /* Safari and Chrome */
         }
     </style>
 </head>
@@ -151,6 +158,7 @@
             getProfile();
             getMenuCategory();
             getMenuPrices();
+            scrollCategoryMenu();
         });
 
         function selectCategory(element) {
@@ -197,16 +205,15 @@
                 headers: headers,
                 success: function(response) {
                     $('#kategoriMenu').empty();
-                    var allCard = `<div class="card bg-secondary menu-category-card-selected clicked m-0 text-white menu-category-card" style="cursor: pointer;" onclick="selectCategory(this)">
+                    var allCard = `<div class="card bg-secondary menu-category-card-selected clicked m-0 text-white menu-category-card" style="cursor: pointer; flex-shrink: 0; min-width: 150px;" onclick="selectCategory(this)">
                                         <div class="card-body">
                                             <p class="card-text">Semua</p>
                                         </div>
-                                    </div>
-                                    <div class="vr"></div>`;
+                                    </div>`;
 
                     $('#kategoriMenu').append(allCard);
                     $.each(response.data, function(index, item) {
-                        var card = `<div class="card bg-secondary m-0 text-white menu-category-card" style="cursor: pointer;" data-uuid="${item.uuid}" onclick="selectCategory(this)">
+                        var card = `<div class="card bg-secondary m-0 text-white menu-category-card" style="cursor: pointer; flex-shrink: 0; min-width: 150px;" data-uuid="${item.uuid}" onclick="selectCategory(this)">
                                         <div class="card-body">
                                             <p class="card-text">${item.name}</p>
                                         </div>
@@ -266,6 +273,38 @@
                 error: function(xhr, status, error) {
                     console.error(JSON.parse(xhr.responseText).message);
                 }
+            });
+        }
+
+        function scrollCategoryMenu() {
+            const $kategoriMenu = $('#kategoriMenu');
+            let isDown = false;
+            let startX;
+            let scrollLeft;
+
+            $kategoriMenu.on('mousedown', function(e) {
+                isDown = true;
+                $kategoriMenu.addClass('active');
+                startX = e.pageX - $kategoriMenu.offset().left;
+                scrollLeft = $kategoriMenu.scrollLeft();
+            });
+
+            $kategoriMenu.on('mouseleave', function() {
+                isDown = false;
+                $kategoriMenu.removeClass('active');
+            });
+
+            $kategoriMenu.on('mouseup', function() {
+                isDown = false;
+                $kategoriMenu.removeClass('active');
+            });
+
+            $kategoriMenu.on('mousemove', function(e) {
+                if (!isDown) return;
+                e.preventDefault();
+                const x = e.pageX - $kategoriMenu.offset().left;
+                const walk = (x - startX) * 1; //scroll-fast
+                $kategoriMenu.scrollLeft(scrollLeft - walk);
             });
         }
     </script>
