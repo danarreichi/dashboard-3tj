@@ -22,6 +22,8 @@ class ActiveMenuPriceResource extends JsonResource
             'revision' => $this->revision,
             'price' => "Rp" . number_format($this->price, 2, ",", "."),
             'status' => $this->status,
+            'stock_remaining' => $this->stock_remaining,
+            'availability' => ($this->availability) ? true : false,
             'updated_at' => $this->updated_at,
             'name' => $this->getPropWhenLoaded('menu', 'name'),
             'image' => $this->getPropWhenLoaded('menu.image', 'path'),

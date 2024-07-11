@@ -66,21 +66,21 @@
                     </a>
                 </li>
 
-                <li class="sidebar-title">Kasir</li>
-
-                <li class="sidebar-item {{ request()->routeIs('order') ? 'active' : '' }}">
-                    <a href="order" class='sidebar-link'>
-                        <i class="bi bi-cart"></i>
-                        <span>Pesan</span>
-                    </a>
-                </li>
-
                 <li class="sidebar-title">Pengaturan</li>
 
                 <li class="sidebar-item {{ request()->routeIs('account') ? 'active' : '' }}">
                     <a href="account" class='sidebar-link'>
                         <i class="bi bi-person-circle"></i>
                         <span>Accounts</span>
+                    </a>
+                </li>
+
+                <li class="sidebar-title">Kasir</li>
+
+                <li class="sidebar-item {{ request()->routeIs('order') ? 'active' : '' }}">
+                    <a href="order" class='sidebar-link'>
+                        <i class="bi bi-cart"></i>
+                        <span>Pesan</span>
                     </a>
                 </li>
             </ul>

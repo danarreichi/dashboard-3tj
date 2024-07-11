@@ -128,8 +128,17 @@
                         <div class="card-header">
                             <h4 class="card-title">Pesanan</h4>
                         </div>
-                        <div class="card-body w-100">
+                        <div class="card-body d-flex flex-column w-100">
+                            <div class="row-6">
+                                <form id="chart" onsubmit="checkout(this)">
+                                    <div class="accordion" id="chartList">
 
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="row-6 flex-grow-1">
+
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -180,7 +189,6 @@
 
         function selectMenu(element) {
             $(element).toggleClass('clicked');
-            $(element).find('.accordion-collapse').collapse('toggle');
             $('.menu-card.clicked').each(function() {
                 selectedMenu.push($(this).data('uuid'));
             });
@@ -189,6 +197,52 @@
                 selectedMenu = selectedMenu.filter(item => item !== toRemove);
             });
             selectedMenu = [...new Set(selectedMenu)];
+            getMenus(selectedMenu);
+        }
+
+        function getMenus(menuUuids) {
+            var queryParams = {
+                'uuids': menuUuids
+            };
+            if(menuUuids.length == 0) {
+                $('#chartList').empty();
+                return;
+            }
+            var headers = {
+                'Authorization': 'Bearer ' + localStorage.getItem("bearer")
+            };
+            $.ajax({
+                url: host + 'menu',
+                type: 'GET',
+                data: queryParams,
+                headers: headers,
+                success: function(response) {
+                    $('#chartList').empty(); // iki ojok di clear
+                    $.each(response.data, function(index, item) {
+                        var item = `<div class="accordion-item">
+                                        <h2 class="accordion-header">
+                                            <button class="accordion-button collapsed fw-bolder" type="button"
+                                                data-bs-toggle="collapse" data-bs-target="#panelMenu${item.uuid}">
+                                                ${item.name}
+                                            </button>
+                                        </h2>
+                                        <div id="panelMenu${item.uuid}" class="accordion-collapse collapse">
+                                            <div class="accordion-body">
+                                                <div class="input-group">
+                                                    <span class="input-group-text" id="basic-addon1">Qty</span>
+                                                    <input type="hidden" name="uuid[]" value="${item.price.uuid}" required>
+                                                    <input type="number" name="qty[]" class="form-control" min="1" max="${item.price.stock_remaining}" value="1" required>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>`;
+                        $('#chartList').append(item);
+                    });
+                },
+                error: function(xhr, status, error) {
+                    console.error(JSON.parse(xhr.responseText).message);
+                }
+            });
         }
 
         function getMenuCategory(element) {
@@ -260,11 +314,12 @@
                     $('#menuPrices').empty();
                     $.each(response.data, function(index, item) {
                         let clicked = (selectedMenu.includes(item.uuid)) ? 'clicked' : '';
-                        var card = `<div class="card bg-secondary m-0 text-white menu-card ${clicked}" style="cursor: pointer;" data-uuid="${item.uuid}" onclick="selectMenu(this)">
+                        var card = `<div class="card bg-secondary m-0 text-white menu-card ${clicked}" style="cursor: pointer; ${(item.availability !== true) ? 'opacity: 0.5;' : ''}" data-uuid="${item.uuid}" ${(item.availability == true)?`onclick="selectMenu(this)"`:``}>
                                         <img src="${pageHost}${item.image}" class="card-img-top" style="width: 200px; height: 200px; object-fit: cover;">
                                         <div class="card-body">
                                             <h5 class="card-title">${item.name}</h5>
                                             <p class="card-text">${item.price}</p>
+                                            ${(item.availability !== true)?`<p class="card-text">Habis</p>`:``}
                                         </div>
                                     </div>`;
                         $('#menuPrices').append(card);

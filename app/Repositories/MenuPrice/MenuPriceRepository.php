@@ -58,13 +58,6 @@ class MenuPriceRepository extends BaseRepository
     public function listActivePrice()
     {
         $data = parent::index()
-            ->whereHas('recipes', function($q){
-                $q->whereHas('history', function($q) {
-                    $q->whereHas('inventory', function($q) {
-                        $q->where('qty', '>=', DB::raw('menu_recipes.qty'));
-                    });
-                });
-            })
             ->whereHas('menu', function($q){
                 $q->when(request('q'), fn($q) => $q->where('name', 'LIKE', '%' . request('q') . '%'));
                 $q->when(request('category_uuid'), function($q){
@@ -72,12 +65,22 @@ class MenuPriceRepository extends BaseRepository
                 });
             })->with('menu', 'recipes')->where('status', 'active')
             ->selectRaw('*, (
-                SELECT ROUND(MIN(COALESCE(inventories.qty / menu_recipes.qty, 0)))
+                SELECT FLOOR(MIN(COALESCE(inventories.qty / menu_recipes.qty, 0)))
                 FROM menu_recipes
                 JOIN inventory_histories ON menu_recipes.inventory_history_id = inventory_histories.id
                 JOIN inventories ON inventory_histories.inventory_id = inventories.id
                 WHERE menu_prices.id = menu_recipes.menu_price_id
-            ) as stock_remaining')
+            ) as stock_remaining,
+             CASE
+                WHEN (
+                    SELECT FLOOR(MIN(COALESCE(inventories.qty / menu_recipes.qty, 0)))
+                    FROM menu_recipes
+                    JOIN inventory_histories ON menu_recipes.inventory_history_id = inventory_histories.id
+                    JOIN inventories ON inventory_histories.inventory_id = inventories.id
+                    WHERE menu_prices.id = menu_recipes.menu_price_id
+                ) > 0 THEN true
+                ELSE false
+            END as availability')
             ->get();
         return $data;
     }
