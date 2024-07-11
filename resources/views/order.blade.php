@@ -37,6 +37,30 @@
             background-color: #00ffb3 !important;
         }
 
+        .menu-card {
+            transition: all 300ms;
+            user-select: none;
+        }
+
+        .menu-card:focus {
+            text-shadow:
+                /* -1px 1px 0 #2DD785,
+                1px 1px 0 #2DD785; */
+            transition: all 300ms;
+            color: #1e1e2d !important;
+            background-color: #00ffb3 !important;
+        }
+
+        .menu-card.clicked {
+            transform: translateY(4px);
+            text-shadow:
+                /* -1px 1px 0 #2DD785,
+                1px 1px 0 #2DD785; */
+            transition: all 300ms;
+            color: #1e1e2d !important;
+            background-color: #00ffb3 !important;
+        }
+
         .menu-category-card-selected {
             color: #1e1e2d !important;
             background-color: #00ffb3 !important;
@@ -86,7 +110,7 @@
                             </div>
                         </div>
                         <div class="card-body w-100">
-                            <div class="d-flex flex-row flex-nowrap overflow-y-auto gap-3 pb-2" id="menuPrices">
+                            <div class="d-flex flex-row flex-wrap overflow-y-auto gap-3 pb-2" id="menuPrices">
                                 {{-- kategori menu disini --}}
                             </div>
                         </div>
@@ -121,13 +145,15 @@
     <script src="{{ asset('page-js-min/base.js') }}"></script>
     <script src="{{ asset('page-js-min/menu-category.js') }}"></script>
     <script>
+        var selectedMenu = [];
+
         $(document).ready(function() {
             getProfile();
             getMenuCategory();
             getMenuPrices();
         });
 
-        function togglePrimary(element) {
+        function selectCategory(element) {
             $('.menu-category-card').each(function() {
                 $(this).removeClass('menu-category-card-selected');
                 $(this).removeClass('clicked');
@@ -144,6 +170,19 @@
             getMenuPrices(element.dataset.uuid);
         }
 
+        function selectMenu(element) {
+            $(element).toggleClass('clicked');
+            $(element).find('.accordion-collapse').collapse('toggle');
+            $('.menu-card.clicked').each(function() {
+                selectedMenu.push($(this).data('uuid'));
+            });
+            $('.menu-card:not(.clicked)').each(function() {
+                let toRemove = $(this).data('uuid');
+                selectedMenu = selectedMenu.filter(item => item !== toRemove);
+            });
+            selectedMenu = [...new Set(selectedMenu)];
+        }
+
         function getMenuCategory(element) {
             var queryParams = {
                 'hasMenu': true
@@ -158,7 +197,7 @@
                 headers: headers,
                 success: function(response) {
                     $('#kategoriMenu').empty();
-                    var allCard = `<div class="card bg-secondary menu-category-card-selected clicked m-0 text-white menu-category-card" style="cursor: pointer;" onclick="togglePrimary(this)">
+                    var allCard = `<div class="card bg-secondary menu-category-card-selected clicked m-0 text-white menu-category-card" style="cursor: pointer;" onclick="selectCategory(this)">
                                         <div class="card-body">
                                             <p class="card-text">Semua</p>
                                         </div>
@@ -167,7 +206,7 @@
 
                     $('#kategoriMenu').append(allCard);
                     $.each(response.data, function(index, item) {
-                        var card = `<div class="card bg-secondary m-0 text-white menu-category-card" style="cursor: pointer;" data-uuid="${item.uuid}" onclick="togglePrimary(this)">
+                        var card = `<div class="card bg-secondary m-0 text-white menu-category-card" style="cursor: pointer;" data-uuid="${item.uuid}" onclick="selectCategory(this)">
                                         <div class="card-body">
                                             <p class="card-text">${item.name}</p>
                                         </div>
@@ -213,7 +252,8 @@
                 success: function(response) {
                     $('#menuPrices').empty();
                     $.each(response.data, function(index, item) {
-                        var card = `<div class="card bg-secondary m-0 text-white menu-category-card" style="cursor: pointer;" data-uuid="${item.uuid}">
+                        let clicked = (selectedMenu.includes(item.uuid)) ? 'clicked' : '';
+                        var card = `<div class="card bg-secondary m-0 text-white menu-card ${clicked}" style="cursor: pointer;" data-uuid="${item.uuid}" onclick="selectMenu(this)">
                                         <img src="${pageHost}${item.image}" class="card-img-top" style="width: 200px; height: 200px; object-fit: cover;">
                                         <div class="card-body">
                                             <h5 class="card-title">${item.name}</h5>
