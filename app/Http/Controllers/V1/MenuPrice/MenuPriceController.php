@@ -3,16 +3,14 @@
 namespace App\Http\Controllers\V1\MenuPrice;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Console\V1\RefreshMenuStockRequest;
 use App\Http\Requests\Console\V1\StoreMenuPriceRequest;
-use App\Http\Requests\Console\V1\StoreMenuRequest;
 use App\Http\Requests\Console\V1\UpdateMenuRequest;
 use App\Http\Resources\Console\V1\ActiveMenuPriceResource;
 use App\Http\Resources\Console\V1\MenuPriceResource;
 use App\Http\Resources\Console\V1\MenuResource;
 use App\Models\Menu;
 use App\Models\MenuPrice;
-use App\Repositories\MediafileRepository;
-use App\Repositories\Menu\MenuRepository;
 use App\Repositories\MenuPrice\MenuPriceRepository;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
@@ -53,6 +51,12 @@ class MenuPriceController extends Controller
     public function listActivePrice()
     {
         $data = $this->repository->listActivePrice();
+        return ActiveMenuPriceResource::collection($data);
+    }
+
+    public function listActivePriceTemp(RefreshMenuStockRequest $request)
+    {
+        $data = $this->repository->listActivePriceTemp($request->validated(), $request['query_params']);
         return ActiveMenuPriceResource::collection($data);
     }
 

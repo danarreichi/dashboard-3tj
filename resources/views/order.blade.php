@@ -162,6 +162,7 @@
     <script src="{{ asset('page-js-min/menu-category.js') }}"></script>
     <script>
         var selectedMenu = [];
+        var selectedCategory;
 
         $(document).ready(function() {
             getProfile();
@@ -171,6 +172,7 @@
         });
 
         function selectCategory(element) {
+            selectedCategory = element.dataset.uuid;
             $('.menu-category-card').each(function() {
                 $(this).removeClass('menu-category-card-selected');
                 $(this).removeClass('clicked');
@@ -184,7 +186,11 @@
             }
             if (!element.dataset.uuid) $('#search').removeAttr('data-category-uuid');
             $('#search').attr('data-category-uuid', element.dataset.uuid);
-            getMenuPrices(element.dataset.uuid);
+            if ($('.accordion-item').hasClass('accordion-item')) {
+                refreshStock(element.dataset.uuid);
+            } else {
+                getMenuPrices(element.dataset.uuid);
+            }
         }
 
         function selectMenu(element) {
@@ -194,6 +200,8 @@
             });
             $('.menu-card:not(.clicked)').each(function() {
                 let toRemove = $(this).data('uuid');
+                let hehe = $('#chartList').find(`.accordion-item[data-uuid="${toRemove}"]`).find('input[type="number"][name="qty[]"]').val(0);
+                if ($('.accordion-item').hasClass('accordion-item')) refreshStock(selectedCategory);
                 $('#chartList').find(`.accordion-item[data-uuid="${toRemove}"]`).remove();
                 selectedMenu = selectedMenu.filter(item => item !== toRemove);
             });
@@ -231,13 +239,14 @@
                                                 <div class="input-group">
                                                     <span class="input-group-text" id="basic-addon1">Qty</span>
                                                     <input type="hidden" name="uuid[]" value="${item.price.uuid}" required>
-                                                    <input type="number" name="qty[]" class="form-control" min="1" oninput="validateQty(this)" max="${item.price.stock_remaining}" value="1" required>
+                                                    <input type="number" name="qty[]" class="form-control" min="0" data-price-uuid="${item.price.uuid}" oninput="debouncedvalidateQty(this)" max="${item.price.stock_remaining}" value="1" required>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>`
                         if ($(`#panelMenu${item.uuid}`).length === 0) $('#chartList').append(accordion);
                     });
+                    refreshStock(selectedCategory);
                 },
                 error: function(xhr, status, error) {
                     console.error(JSON.parse(xhr.responseText).message);
@@ -247,6 +256,56 @@
 
         function validateQty(element) {
             if (parseInt(element.value) > parseInt(element.max)) element.value = element.max;
+            refreshStock(selectedCategory);
+        }
+
+        function refreshStock(uuid, q) {
+            var data = [];
+            var queryParams = {
+                'category_uuid': uuid,
+                'q': (q) ? q : $('#search').val()
+            };
+            var idx = 0;
+            $.each($('#chart').serializeArray(), function(index, item) {
+                if (item.name === 'uuid[]') {
+                    data.push({
+                        uuid: item.value
+                    });
+                } else {
+                    data[idx].qty = item.value;
+                    idx++;
+                }
+            });
+            var headers = {
+                'Authorization': 'Bearer ' + localStorage.getItem("bearer")
+            };
+            $.ajax({
+                url: host + 'menu-price',
+                type: 'POST',
+                data: {
+                    data: data,
+                    query_params: queryParams
+                },
+                headers: headers,
+                success: function(response) {
+                    $('#menuPrices').empty();
+                    $.each(response.data, function(index, item) {
+                        let clicked = (selectedMenu.includes(item.uuid)) ? 'clicked' : '';
+                        var card = `<div class="card bg-secondary m-0 text-white menu-card ${clicked}" title="${item.name}" style="cursor: pointer; ${(item.availability !== true) ? 'opacity: 0.5;' : ''}" data-uuid="${item.uuid}" ${(item.availability == true)?`onclick="selectMenu(this)"`:``}>
+                                        <img src="${pageHost}${item.image}" class="card-img-top" style="width: 200px; height: 200px; object-fit: cover;">
+                                        <div class="card-body">
+                                            <h5 class="card-title" style="width:140px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.name}</h5>
+                                            <p class="card-text">${item.price}</p>
+                                            ${(item.availability !== true)?`<p class="card-text">Habis</p>`:`<p class="card-text">Stok: ${item.stock_remaining}</p>`}
+                                        </div>
+                                    </div>`;
+                        $('#menuPrices').append(card);
+                    });
+                },
+                error: function(xhr, status, error) {
+                    console.error(JSON.parse(xhr.responseText).message);
+                }
+            });
         }
 
         function getMenuCategory(element) {
@@ -286,9 +345,14 @@
         }
 
         const debouncedSearch = debounce(searchMenu, 500);
+        const debouncedvalidateQty = debounce(validateQty, 500);
 
         function searchMenu(element) {
-            getMenuPrices(element.dataset.categoryUuid, element.value)
+            if ($('.accordion-item').hasClass('accordion-item')) {
+                refreshStock(element.dataset.categoryUuid);
+            } else {
+                getMenuPrices(element.dataset.categoryUuid, element.value)
+            }
         }
 
         function debounce(func, delay) {
@@ -323,7 +387,7 @@
                                         <div class="card-body">
                                             <h5 class="card-title" style="width:140px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.name}</h5>
                                             <p class="card-text">${item.price}</p>
-                                            ${(item.availability !== true)?`<p class="card-text">Habis</p>`:``}
+                                            ${(item.availability !== true)?`<p class="card-text">Habis</p>`:`<p class="card-text">Stok: ${item.stock_remaining}</p>`}
                                         </div>
                                     </div>`;
                         $('#menuPrices').append(card);

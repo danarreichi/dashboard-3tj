@@ -50,39 +50,93 @@ class MenuPriceRepository extends BaseRepository
             $recipe['inventory_history_id'] = InventoryHistory::where('uuid', $recipe['uuid'])->first()->id;
             $recipe['qty'] = $recipe['qty'];
             return $recipe;
-        })->values()->toArray();
-        MenuRecipe::insert($recipesInsert);
+        })->values();
+        $recipesInsert->each(function ($recipe) {
+            MenuRecipe::create($recipe);
+        });
         return $menuPrice;
     }
 
     public function listActivePrice()
     {
         $data = parent::index()
-            ->whereHas('menu', function($q){
-                $q->when(request('q'), fn($q) => $q->where('name', 'LIKE', '%' . request('q') . '%'));
-                $q->when(request('category_uuid'), function($q){
-                    $q->whereHas('category', fn($q) => $q->where('uuid', request('category_uuid')));
+            ->whereHas('menu', function ($q) {
+                $q->when(request('q'), fn ($q) => $q->where('name', 'LIKE', '%' . request('q') . '%'));
+                $q->when(request('category_uuid'), function ($q) {
+                    $q->whereHas('category', fn ($q) => $q->where('uuid', request('category_uuid')));
                 });
-            })->with('menu', 'recipes')->where('status', 'active')
-            ->selectRaw('*, (
-                SELECT FLOOR(MIN(COALESCE(inventories.qty / menu_recipes.qty, 0)))
-                FROM menu_recipes
-                JOIN inventory_histories ON menu_recipes.inventory_history_id = inventory_histories.id
-                JOIN inventories ON inventory_histories.inventory_id = inventories.id
-                WHERE menu_prices.id = menu_recipes.menu_price_id
-            ) as stock_remaining,
-             CASE
-                WHEN (
-                    SELECT FLOOR(MIN(COALESCE(inventories.qty / menu_recipes.qty, 0)))
-                    FROM menu_recipes
-                    JOIN inventory_histories ON menu_recipes.inventory_history_id = inventory_histories.id
-                    JOIN inventories ON inventory_histories.inventory_id = inventories.id
-                    WHERE menu_prices.id = menu_recipes.menu_price_id
-                ) > 0 THEN true
-                ELSE false
-            END as availability')
+            })->with('menu')->where('status', 'active')
+            ->addSelect([
+                'stock_remaining' => MenuRecipe::selectRaw('FLOOR(MIN(COALESCE(inventories.qty / menu_recipes.qty, 0)))')
+                    ->join('inventory_histories', 'menu_recipes.inventory_history_id', '=', 'inventory_histories.id')
+                    ->join('inventories', 'inventory_histories.inventory_id', '=', 'inventories.id')
+                    ->whereColumn('menu_prices.id', 'menu_recipes.menu_price_id')
+                    ->limit(1),
+                'availability' => MenuRecipe::selectRaw('CASE WHEN FLOOR(MIN(COALESCE(inventories.qty / menu_recipes.qty, 0))) > 0 THEN true ELSE false END')
+                    ->join('inventory_histories', 'menu_recipes.inventory_history_id', '=', 'inventory_histories.id')
+                    ->join('inventories', 'inventory_histories.inventory_id', '=', 'inventories.id')
+                    ->whereColumn('menu_prices.id', 'menu_recipes.menu_price_id')
+                    ->limit(1)
+            ])
             ->get();
         return $data;
+    }
+
+    public function listActivePriceTemp(array $attributes, $param)
+    {
+        $data = parent::index()
+            ->whereHas('menu', function ($q) use ($param) {
+                $q->when($param, function ($q) use ($param) {
+                    $q->where('name', 'LIKE', '%' . $param['q'] . '%');
+                    if (array_key_exists('category_uuid', $param)) {
+                        $q->whereHas('category', fn ($q) => $q->where('uuid', $param['category_uuid']));
+                    }
+                });
+            })
+            ->with(['menu', 'recipes.history.inventory'])
+            ->where('status', 'active')
+            ->addSelect([
+                'stock_remaining' => MenuRecipe::selectRaw('FLOOR(MIN(COALESCE(inventories.qty / menu_recipes.qty, 0)))')
+                    ->join('inventory_histories', 'menu_recipes.inventory_history_id', '=', 'inventory_histories.id')
+                    ->join('inventories', 'inventory_histories.inventory_id', '=', 'inventories.id')
+                    ->whereColumn('menu_prices.id', 'menu_recipes.menu_price_id')
+                    ->limit(1),
+                'availability' => MenuRecipe::selectRaw('CASE WHEN FLOOR(MIN(COALESCE(inventories.qty / menu_recipes.qty, 0))) > 0 THEN true ELSE false END')
+                    ->join('inventory_histories', 'menu_recipes.inventory_history_id', '=', 'inventory_histories.id')
+                    ->join('inventories', 'inventory_histories.inventory_id', '=', 'inventories.id')
+                    ->whereColumn('menu_prices.id', 'menu_recipes.menu_price_id')
+                    ->limit(1)
+            ])
+            ->get();
+
+        $idx = 0;
+        $setNewInventoryTemp = $data->map(function ($item) use ($attributes, &$idx) {
+            if (in_array($item->uuid, collect($attributes['data'])->pluck('uuid')->toArray())) {
+                if ($item->uuid === $attributes['data'][$idx]['uuid']) {
+                    $qty = $attributes['data'][$idx]['qty'];
+                    $item->recipes = $item->recipes->map(function ($recipe) use ($qty) {
+                        $qtyAsked = $recipe->qty * $qty;
+                        $recipe->history->inventory->qty = $recipe->history->inventory->qty - $qtyAsked;
+                        return $recipe;
+                    });
+                }
+                $idx++;
+            }
+            return $item;
+        });
+
+        $setNewMenuStock = $setNewInventoryTemp->map(function ($item) {
+            $stockRemaining = [];
+            $item->recipes->map(function ($recipe) use (&$stockRemaining) {
+                $result = floor($recipe->history->inventory->qty / $recipe->qty);
+                array_push($stockRemaining, $result);
+            });
+            $item->stock_remaining = min($stockRemaining);
+            if (min($stockRemaining) === 0) $item->availability = 0;
+            return $item;
+        });
+
+        return $setNewMenuStock;
     }
 
     public function activatePrice(Menu $menu, MenuPrice $price)
