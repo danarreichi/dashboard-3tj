@@ -205,7 +205,7 @@
             var queryParams = {
                 'uuids': menuUuids
             };
-            if(menuUuids.length == 0) {
+            if (menuUuids.length == 0) {
                 $('#chartList').empty();
                 return;
             }
@@ -218,7 +218,6 @@
                 data: queryParams,
                 headers: headers,
                 success: function(response) {
-                    console.log(response.data);
                     $.each(response.data, function(index, item) {
                         var accordion = `<div class="accordion-item" data-uuid="${item.price.uuid}">
                                         <h2 class="accordion-header">
@@ -232,7 +231,7 @@
                                                 <div class="input-group">
                                                     <span class="input-group-text" id="basic-addon1">Qty</span>
                                                     <input type="hidden" name="uuid[]" value="${item.price.uuid}" required>
-                                                    <input type="number" name="qty[]" class="form-control" min="1" max="${item.price.stock_remaining}" value="1" required>
+                                                    <input type="number" name="qty[]" class="form-control" min="1" oninput="validateQty(this)" max="${item.price.stock_remaining}" value="1" required>
                                                 </div>
                                             </div>
                                         </div>
@@ -244,6 +243,10 @@
                     console.error(JSON.parse(xhr.responseText).message);
                 }
             });
+        }
+
+        function validateQty(element) {
+            if (parseInt(element.value) > parseInt(element.max)) element.value = element.max;
         }
 
         function getMenuCategory(element) {
@@ -315,10 +318,10 @@
                     $('#menuPrices').empty();
                     $.each(response.data, function(index, item) {
                         let clicked = (selectedMenu.includes(item.uuid)) ? 'clicked' : '';
-                        var card = `<div class="card bg-secondary m-0 text-white menu-card ${clicked}" style="cursor: pointer; ${(item.availability !== true) ? 'opacity: 0.5;' : ''}" data-uuid="${item.uuid}" ${(item.availability == true)?`onclick="selectMenu(this)"`:``}>
+                        var card = `<div class="card bg-secondary m-0 text-white menu-card ${clicked}" title="${item.name}" style="cursor: pointer; ${(item.availability !== true) ? 'opacity: 0.5;' : ''}" data-uuid="${item.uuid}" ${(item.availability == true)?`onclick="selectMenu(this)"`:``}>
                                         <img src="${pageHost}${item.image}" class="card-img-top" style="width: 200px; height: 200px; object-fit: cover;">
                                         <div class="card-body">
-                                            <h5 class="card-title">${item.name}</h5>
+                                            <h5 class="card-title" style="width:140px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.name}</h5>
                                             <p class="card-text">${item.price}</p>
                                             ${(item.availability !== true)?`<p class="card-text">Habis</p>`:``}
                                         </div>
