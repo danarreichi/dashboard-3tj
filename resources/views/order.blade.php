@@ -194,6 +194,7 @@
             });
             $('.menu-card:not(.clicked)').each(function() {
                 let toRemove = $(this).data('uuid');
+                $('#chartList').find(`.accordion-item[data-uuid="${toRemove}"]`).remove();
                 selectedMenu = selectedMenu.filter(item => item !== toRemove);
             });
             selectedMenu = [...new Set(selectedMenu)];
@@ -217,9 +218,9 @@
                 data: queryParams,
                 headers: headers,
                 success: function(response) {
-                    $('#chartList').empty(); // iki ojok di clear
+                    console.log(response.data);
                     $.each(response.data, function(index, item) {
-                        var item = `<div class="accordion-item">
+                        var accordion = `<div class="accordion-item" data-uuid="${item.price.uuid}">
                                         <h2 class="accordion-header">
                                             <button class="accordion-button collapsed fw-bolder" type="button"
                                                 data-bs-toggle="collapse" data-bs-target="#panelMenu${item.uuid}">
@@ -235,8 +236,8 @@
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>`;
-                        $('#chartList').append(item);
+                                    </div>`
+                        if ($(`#panelMenu${item.uuid}`).length === 0) $('#chartList').append(accordion);
                     });
                 },
                 error: function(xhr, status, error) {
