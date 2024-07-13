@@ -193,7 +193,11 @@
             }
         }
 
+        let loadMenu = false;
         function selectMenu(element) {
+            if(loadMenu === true){
+                return;
+            }
             $(element).toggleClass('clicked');
             if ($(element).hasClass('clicked')) {
                 selectedMenu.push(element.dataset.uuid);
@@ -208,11 +212,13 @@
         }
 
         function getMenus(menuUuids) {
+            loadMenu = true;
             var queryParams = {
                 'uuids': menuUuids
             };
             if (menuUuids.length == 0) {
                 $('#chartList').empty();
+                loadMenu = false;
                 return;
             }
             var headers = {
@@ -245,6 +251,7 @@
                         if ($(`#panelMenu${item.uuid}`).length === 0) $('#chartList').append(accordion);
                     });
                     refreshStock(selectedCategory);
+                    loadMenu = false;
                 },
                 error: function(xhr, status, error) {
                     console.error(JSON.parse(xhr.responseText).message);
