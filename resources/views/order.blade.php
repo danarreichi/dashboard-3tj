@@ -195,18 +195,16 @@
 
         function selectMenu(element) {
             $(element).toggleClass('clicked');
-            $('.menu-card.clicked').each(function() {
-                selectedMenu.push($(this).data('uuid'));
-            });
-            $('.menu-card:not(.clicked)').each(function() {
-                let toRemove = $(this).data('uuid');
-                let hehe = $('#chartList').find(`.accordion-item[data-uuid="${toRemove}"]`).find('input[type="number"][name="qty[]"]').val(0);
+            if ($(element).hasClass('clicked')) {
+                selectedMenu.push(element.dataset.uuid);
+                debouncedGetMenu(selectedMenu);
+            } else {
+                let hehe = $('#chartList').find(`.accordion-item[data-uuid="${element.dataset.uuid}"]`).find('input[type="number"][name="qty[]"]').val(0);
                 if ($('.accordion-item').hasClass('accordion-item')) refreshStock(selectedCategory);
-                $('#chartList').find(`.accordion-item[data-uuid="${toRemove}"]`).remove();
-                selectedMenu = selectedMenu.filter(item => item !== toRemove);
-            });
-            selectedMenu = [...new Set(selectedMenu)];
-            getMenus(selectedMenu);
+                $('#chartList').find(`.accordion-item[data-uuid="${element.dataset.uuid}"]`).remove();
+                selectedMenu = selectedMenu.filter(item => item !== element.dataset.uuid);
+                debouncedGetMenu(selectedMenu);
+            }
         }
 
         function getMenus(menuUuids) {
@@ -239,7 +237,7 @@
                                                 <div class="input-group">
                                                     <span class="input-group-text" id="basic-addon1">Qty</span>
                                                     <input type="hidden" name="uuid[]" value="${item.price.uuid}" required>
-                                                    <input type="number" name="qty[]" class="form-control" min="0" data-price-uuid="${item.price.uuid}" oninput="debouncedvalidateQty(this)" max="${item.price.stock_remaining}" value="1" required>
+                                                    <input type="number" name="qty[]" class="form-control" min="0" data-price-uuid="${item.price.uuid}" oninput="debouncedvalidateQty(this)" max="${item.price.stock_remaining}" min="0" value="0" required>
                                                 </div>
                                             </div>
                                         </div>
@@ -256,6 +254,7 @@
 
         function validateQty(element) {
             if (parseInt(element.value) > parseInt(element.max)) element.value = element.max;
+            if (parseInt(element.value) < parseInt(element.min)) element.value = element.min;
             refreshStock(selectedCategory);
         }
 
@@ -301,6 +300,21 @@
                                     </div>`;
                         $('#menuPrices').append(card);
                     });
+                    $.each(response.data, function(index, item) {
+                        if ($('.accordion-item').hasClass('accordion-item')) {
+                            $('input[type="number"][name="qty[]"]').each(function() {
+                                let priceUuid = $(this).data('priceUuid');
+                                if (priceUuid === item.uuid) {
+                                    let value = $(this).val();
+                                    let maxVal = parseInt(value) + parseInt(item
+                                        .stock_remaining);
+                                    $(this).attr({
+                                        'max': maxVal
+                                    });
+                                }
+                            });
+                        }
+                    });
                 },
                 error: function(xhr, status, error) {
                     console.error(JSON.parse(xhr.responseText).message);
@@ -344,6 +358,7 @@
             });
         }
 
+        const debouncedGetMenu = debounce(getMenus, 500);
         const debouncedSearch = debounce(searchMenu, 500);
         const debouncedvalidateQty = debounce(validateQty, 500);
 

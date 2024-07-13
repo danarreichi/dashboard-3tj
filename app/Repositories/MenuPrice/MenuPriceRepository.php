@@ -85,14 +85,7 @@ class MenuPriceRepository extends BaseRepository
     public function listActivePriceTemp(array $attributes, $param)
     {
         $data = parent::index()
-            ->whereHas('menu', function ($q) use ($param) {
-                $q->when($param, function ($q) use ($param) {
-                    $q->where('name', 'LIKE', '%' . $param['q'] . '%');
-                    if (array_key_exists('category_uuid', $param)) {
-                        $q->whereHas('category', fn ($q) => $q->where('uuid', $param['category_uuid']));
-                    }
-                });
-            })
+            ->whereHas('menu')
             ->with(['menu', 'recipes.history.inventory'])
             ->where('status', 'active')
             ->addSelect([
@@ -109,18 +102,15 @@ class MenuPriceRepository extends BaseRepository
             ])
             ->get();
 
-        $idx = 0;
-        $setNewInventoryTemp = $data->map(function ($item) use ($attributes, &$idx) {
-            if (in_array($item->uuid, collect($attributes['data'])->pluck('uuid')->toArray())) {
-                if ($item->uuid === $attributes['data'][$idx]['uuid']) {
-                    $qty = $attributes['data'][$idx]['qty'];
-                    $item->recipes = $item->recipes->map(function ($recipe) use ($qty) {
-                        $qtyAsked = $recipe->qty * $qty;
-                        $recipe->history->inventory->qty = $recipe->history->inventory->qty - $qtyAsked;
-                        return $recipe;
-                    });
-                }
-                $idx++;
+        $setNewInventoryTemp = $data->map(function ($item) use ($attributes) {
+            $matchingData = collect($attributes['data'])->firstWhere('uuid', $item->uuid);
+            if ($matchingData) {
+                $qty = $matchingData['qty'];
+                $item->recipes = $item->recipes->map(function ($recipe) use ($qty) {
+                    $qtyAsked = $recipe->qty * $qty;
+                    $recipe->history->inventory->qty = $recipe->history->inventory->qty - $qtyAsked;
+                    return $recipe;
+                });
             }
             return $item;
         });
@@ -132,11 +122,23 @@ class MenuPriceRepository extends BaseRepository
                 array_push($stockRemaining, $result);
             });
             $item->stock_remaining = min($stockRemaining);
-            if (min($stockRemaining) === 0) $item->availability = 0;
+            if (min($stockRemaining) == 0) $item->availability = 0;
             return $item;
         });
 
-        return $setNewMenuStock;
+        $filteredMenuStock = $setNewMenuStock;
+        if ($param) {
+            $filteredMenuStock = $filteredMenuStock->filter(function ($item) use ($param) {
+                return stripos($item->menu->name, $param['q']) !== false;
+            });
+            if (array_key_exists('category_uuid', $param)) {
+                $filteredMenuStock = $filteredMenuStock->filter(function ($item) use ($param) {
+                    return $item->menu->category->uuid === $param['category_uuid'];
+                });
+            }
+        }
+
+        return $filteredMenuStock;
     }
 
     public function activatePrice(Menu $menu, MenuPrice $price)
