@@ -74,6 +74,11 @@ Aplikasi Point of Sale (POS) ini dirancang untuk memudahkan pengelolaan penjuala
 5. **Tampilan Stok yang Berubah Dinamis**
    - Pilihan menu yang menampilkan stok barang akan otomatis diperbarui secara dinamis, memastikan informasi stok selalu terkini dan akurat. Ini membantu pengguna untuk mengambil keputusan yang tepat berdasarkan ketersediaan barang.
 
+## Catatan & To-Do List
+- Aplikasi ini masih dalam tahap pengembangan.
+- Akan ada penambahan fitur untuk checkout, diskon, & print struk pembelian.
+- Untuk sementara Stock produk dinamis ada masalah _slow query_ jika terdapat banyak data, fitur ini masih berupa _proof of concept_.
+
 ## Kontribusi
 
 1. Fork repository ini
