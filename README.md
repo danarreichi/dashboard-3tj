@@ -55,7 +55,11 @@ Aplikasi Point of Sale (POS) ini dirancang untuk memudahkan pengelolaan penjuala
 
 2. **Akses aplikasi di browser**
 
-    Buka [http://localhost:8000](http://localhost:8000) di browser Anda.
+    Buka [http://localhost:8000](http://localhost:8000) di browser Anda, dan login menggunakan akun Admin untuk memulai.
+   ```bash
+    - username: admin
+    - password: admin
+    ```
 
 ## Fitur Utama
 
