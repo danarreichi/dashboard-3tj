@@ -14,7 +14,7 @@ Aplikasi Point of Sale (POS) ini dirancang untuk memudahkan pengelolaan penjuala
 
     ```bash
     git clone https://github.com/danarreichi/dashboard-3tj.git
-    cd repo
+    cd dashboard-3tj
     ```
 
 2. **Instal dependensi dengan Composer**
