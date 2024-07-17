@@ -318,7 +318,8 @@
             if (parseInt(element.value) == 0) {
                 $(`.accordion-item[data-uuid="${element.dataset.priceUuid}"]`).remove();
                 selectedMenu = selectedMenu.filter(item => item !== element.dataset.priceUuid);
-                if (selectedMenu.length == 0) $('#chartList').append(`<p class="fs-5 text-center">--Keranjang kosong--</p>`);
+                if (selectedMenu.length == 0) $('#chartList').append(
+                `<p class="fs-5 text-center">--Keranjang kosong--</p>`);
             }
         }
 
@@ -375,6 +376,13 @@
                                     $(this).attr({
                                         'max': maxVal
                                     });
+                                    if (parseInt(maxVal) === 0) {
+                                        let parent = $(this).closest('.accordion-item');
+                                        let priceUuid = parent.data('uuid');
+                                        selectedMenu = selectedMenu.filter(item => item !== priceUuid);
+                                        parent.remove();
+                                        $(`.menu-card[data-uuid="${priceUuid}"]`).toggleClass('clicked');
+                                    }
                                 }
                             });
                         }
