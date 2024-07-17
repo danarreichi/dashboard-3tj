@@ -163,6 +163,12 @@ let customized_datatable = $('#menuTable').DataTable({
         {
             data: null,
             render: function (data, type, row) {
+                return row.price_display;
+            }
+        },
+        {
+            data: null,
+            render: function (data, type, row) {
                 return dateIndFormat(row.updated_at);
             }
         },
@@ -703,6 +709,10 @@ function activatePrice(element) {
                     let lastPage = menuPricesTable.page();
                     menuPricesTable.ajax.reload(function () {
                         menuPricesTable.page(lastPage).draw(false);
+                    });
+                    lastPage = customized_datatable.page();
+                    customized_datatable.ajax.reload(function () {
+                        customized_datatable.page(lastPage).draw(false);
                     });
                 },
                 error: function (xhr, status, error) {

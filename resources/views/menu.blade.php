@@ -77,6 +77,7 @@
                                                         <th>No.</th>
                                                         <th>Nama</th>
                                                         <th>Kategori</th>
+                                                        <th>Harga</th>
                                                         <th>Terakhir Diperbarui</th>
                                                         <th>Aksi</th>
                                                     </tr>

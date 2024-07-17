@@ -20,7 +20,7 @@ class MenuRepository extends BaseRepository
     {
         $filters = [AllowedFilter::trashed()];
         $sorts = ['name', 'updated_at'];
-        $query = parent::index($filters, $sorts);
+        $query = parent::index($filters, $sorts)->with('price');
         $query->when(request('uuids'), function($q){
             $q->whereHas('prices', fn($q) => $q->whereIn('uuid', request('uuids')));
             $q->with('price', function($q){
