@@ -77,7 +77,7 @@ function addInventory(element) {
             clearForm(element.id);
             Toast.fire({
                 icon: 'success',
-                title: 'Data added',
+                title: 'Data berhasil ditambahkan',
                 timer: 1500
             });
             customized_datatable.ajax.reload();

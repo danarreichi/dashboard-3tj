@@ -21,6 +21,18 @@ Route::get('/inventory', function () {
     return view('inventory');
 })->name('inventory');
 
+Route::get('/menu-category', function () {
+    return view('menu-category');
+})->name('menu-category');
+
+Route::get('/menu', function () {
+    return view('menu');
+})->name('menu');
+
+Route::get('/order', function () {
+    return view('order');
+})->name('order');
+
 Route::get('/account', function () {
     return view('accounts');
 })->name('account');

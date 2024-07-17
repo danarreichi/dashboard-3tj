@@ -76,7 +76,7 @@ class InventoryController extends Controller
 
     public function destroy(Inventory $inventory)
     {
-        abort_if(Auth::user()->userRole->id === 'user', 403, __("As User, you Can't delete an inventory"));
+        abort_if(Auth::user()->userRole->id === 'user', 403, __("User tidak bisa menghapus inventory"));
         return $this->repository->destroy($inventory);
     }
 
@@ -118,5 +118,16 @@ class InventoryController extends Controller
                 'date_max' => $dateMax
             ]
         ]);
+    }
+
+    public function dropdownHistory(Inventory $inventory)
+    {
+        $data = $this->inventoryHistoryRepository->listDropdownByInventory($inventory);
+        return InventoryHistoriesResource::collection($data);
+    }
+
+    public function dropdown()
+    {
+        return InventoryResource::collection($this->repository->listDropdown());
     }
 }

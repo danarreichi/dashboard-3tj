@@ -71,7 +71,7 @@ function addAccount(element) {
             clearForm(element.id);
             Toast.fire({
                 icon: 'success',
-                title: 'Data added',
+                title: 'Data berhasil ditambahkan',
                 timer: 1500
             });
             customized_datatable.ajax.reload();
@@ -95,7 +95,7 @@ function getRoleDropdown(type) {
         'Authorization': 'Bearer ' + localStorage.getItem("bearer")
     };
     $.ajax({
-        url: host + "role-dropdown",
+        url: host + "dropdown/role",
         type: 'GET',
         headers: headers,
         success: function (response) {

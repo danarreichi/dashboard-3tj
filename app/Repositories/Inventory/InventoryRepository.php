@@ -22,7 +22,7 @@ class InventoryRepository extends BaseRepository
         $sorts = ['name', 'qty', 'unit', 'updated_at'];
         $query = parent::index($filters, $sorts);
         if (request('q')) {
-            $query->where(function($q) {
+            $query->where(function ($q) {
                 $q->where('name', 'LIKE', '%' . request('q') . '%');
                 $q->orWhere('unit', 'LIKE', '%' . request('q') . '%');
             });
@@ -30,10 +30,19 @@ class InventoryRepository extends BaseRepository
         return $query->paginate(request('limit', 15))->withQueryString();
     }
 
+    public function listDropdown()
+    {
+        $data = parent::index()->orderBy('name');
+        if (request('excludes')) {
+            $data->whereNotIn('uuid', explode(',', request('excludes')));
+        }
+        return $data->get();
+    }
+
     public function adjustQty(Inventory $inventory, array $attributes)
     {
         $query = self::update($inventory, [
-            'qty' => ($attributes['status'] === 'out')? $inventory->qty - $attributes['qty'] : $inventory->qty + $attributes['qty']
+            'qty' => ($attributes['status'] === 'out') ? $inventory->qty - $attributes['qty'] : $inventory->qty + $attributes['qty']
         ]);
         return $query;
     }

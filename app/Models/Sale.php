@@ -13,4 +13,9 @@ class Sale extends BaseModel
     {
         return $this->belongsTo(MenuPrice::class);
     }
+
+    public function saleGroup()
+    {
+        return $this->belongsTo(SaleGroup::class);
+    }
 }
