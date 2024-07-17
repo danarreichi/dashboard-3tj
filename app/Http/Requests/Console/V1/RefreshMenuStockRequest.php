@@ -30,6 +30,7 @@ class RefreshMenuStockRequest extends FormRequest
             'data' => ['required', 'array', 'min:1'],
             'data.*.uuid' => ['required', Rule::exists('menu_prices', 'uuid')],
             'data.*.qty' => ['required', 'min:1'],
+            'discount' => ['nullable', Rule::exists('discounts', 'code')],
             'query_params' => ['required', 'array'],
             'query_params.*.category_uuid' => ['nullable', Rule::exists('menu_categories', 'uuid')],
             'query_params.*.q' => ['nullable'],

@@ -148,16 +148,16 @@
                                 <div class="d-flex flex-column align-self-start w-100" id="priceInfo">
                                     <div class="d-flex justify-content-between" id="subTotal">
                                         <p class="fs-6">Subtotal: </p>
-                                        <p class="fs-6 fw-bolder">Rp4500</p>
+                                        <p class="fs-6 fw-bolder">Rp0,00</p>
                                     </div>
                                     <div class="d-flex justify-content-between" id="discount">
                                         <p class="fs-6">Diskon: </p>
-                                        <p class="fs-6 fw-bolder">N/A</p>
+                                        <p class="fs-6 fw-bolder">Rp0,00</p>
                                     </div>
                                     <hr>
                                     <div class="d-flex justify-content-between" id="totalPayment">
                                         <p class="fs-5">Total: </p>
-                                        <p class="fs-5 fw-bolder">N/A</p>
+                                        <p class="fs-5 fw-bolder">Rp0,00</p>
                                     </div>
                                 </div>
                                 <div>
@@ -353,6 +353,9 @@
                 headers: headers,
                 success: function(response) {
                     $('#menuPrices').empty();
+                    $('#subTotal').find('.fs-6.fw-bolder').html(response.meta.subtotal);
+                    $('#discount').find('.fs-6.fw-bolder').html(response.meta.discount);
+                    $('#totalPayment').find('.fs-5.fw-bolder').html(response.meta.total);
                     $.each(response.data, function(index, item) {
                         let clicked = (selectedMenu.includes(item.uuid)) ? 'clicked' : '';
                         var card = `<div class="card bg-secondary m-0 text-white menu-card ${clicked}" title="${item.name}" style="cursor: pointer; ${(item.availability !== true) ? 'opacity: 0.5;' : ''}" data-uuid="${item.uuid}" ${(item.availability == true)?`onclick="selectMenu(this)"`:``}>
