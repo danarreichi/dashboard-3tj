@@ -24,7 +24,7 @@ class MenuResource extends JsonResource
             'category_uuid' => $this->getPropWhenLoaded('category', 'uuid'),
             'image' => $this->getPropWhenLoaded('image', 'path'),
             'price' => $this->whenLoaded('price'),
-            'price_display' => "Rp" . number_format($this->getPropWhenLoaded('price', 'price'), 2, ",", "."),
+            'price_display' => $this->getPropWhenLoaded('price', 'price') ? "Rp" . number_format($this->getPropWhenLoaded('price', 'price'), 2, ",", ".") : 'Belum aktif',
             'updated_at' => $this->updated_at,
             'status' => $this->deleted_at ? 'inactive' : 'active',
         ];

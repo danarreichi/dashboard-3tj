@@ -66,6 +66,14 @@
             transform: translateY(4px);
         }
 
+        .scrollable-accordion {
+            max-height: 160px;
+            /* Atur tinggi maksimum sesuai kebutuhan Anda */
+            overflow-y: scroll;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
         #kategoriMenu {
             overflow-x: scroll;
             -ms-overflow-style: none;
@@ -129,15 +137,55 @@
                             <h4 class="card-title">Pesanan</h4>
                         </div>
                         <div class="card-body d-flex flex-column w-100">
-                            <div class="row-6">
+                            <div class="row-6 mb-4">
                                 <form id="chart" onsubmit="checkout(this)">
-                                    <div class="accordion" id="chartList">
-
+                                    <div class="accordion scrollable-accordion" id="chartList">
+                                        <p class="fs-5 text-center">--Keranjang kosong--</p>
                                     </div>
                                 </form>
                             </div>
-                            <div class="row-6 flex-grow-1">
-
+                            <div class="row-6 d-flex justify-content-between flex-column h-100">
+                                <div class="d-flex flex-column align-self-start w-100" id="priceInfo">
+                                    <div class="d-flex justify-content-between" id="subTotal">
+                                        <p class="fs-6">Subtotal: </p>
+                                        <p class="fs-6 fw-bolder">Rp4500</p>
+                                    </div>
+                                    <div class="d-flex justify-content-between" id="discount">
+                                        <p class="fs-6">Diskon: </p>
+                                        <p class="fs-6 fw-bolder">N/A</p>
+                                    </div>
+                                    <hr>
+                                    <div class="d-flex justify-content-between" id="totalPayment">
+                                        <p class="fs-5">Total: </p>
+                                        <p class="fs-5 fw-bolder">N/A</p>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="d-flex flex-column mb-3" id="buttonPayment">
+                                        <p class="text-body-secondary mb-3 fw-semibold">Cara pembayaran:</p>
+                                        <div class="d-flex gap-2" id="paymentMethods">
+                                            <div
+                                                class="d-flex flex-column align-items-center justify-content-center w-100">
+                                                <button type="button" class="btn btn-outline-primary active w-100 mb-1"
+                                                    onclick="changeActivePaymentMethod(this)">
+                                                    <i class="bi bi-cash me-1"></i>
+                                                </button>
+                                                <p class="fw-semibold">Cash</p>
+                                            </div>
+                                            <div
+                                                class="d-flex flex-column align-items-center justify-content-center w-100">
+                                                <button type="button" class="btn btn-outline-primary w-100 mb-1"
+                                                    onclick="changeActivePaymentMethod(this)">
+                                                    <i class="bi bi-qr-code me-1"></i>
+                                                </button>
+                                                <p class="fw-semibold">QRIS</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-primary w-100" disabled>
+                                        Lanjutkan Pembayaran
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -194,16 +242,19 @@
         }
 
         let loadMenu = false;
+
         function selectMenu(element) {
-            if(loadMenu === true){
+            if (loadMenu === true) {
                 return;
             }
             $(element).toggleClass('clicked');
             if ($(element).hasClass('clicked')) {
                 selectedMenu.push(element.dataset.uuid);
                 debouncedGetMenu(selectedMenu);
+                if (selectedMenu.length > 0) $('#chartList').find('p.fs-5.text-center').remove();
             } else {
-                let hehe = $('#chartList').find(`.accordion-item[data-uuid="${element.dataset.uuid}"]`).find('input[type="number"][name="qty[]"]').val(0);
+                let hehe = $('#chartList').find(`.accordion-item[data-uuid="${element.dataset.uuid}"]`).find(
+                    'input[type="number"][name="qty[]"]').val(0);
                 if ($('.accordion-item').hasClass('accordion-item')) refreshStock(selectedCategory);
                 $('#chartList').find(`.accordion-item[data-uuid="${element.dataset.uuid}"]`).remove();
                 selectedMenu = selectedMenu.filter(item => item !== element.dataset.uuid);
@@ -218,6 +269,7 @@
             };
             if (menuUuids.length == 0) {
                 $('#chartList').empty();
+                $('#chartList').append(`<p class="fs-5 text-center">--Keranjang kosong--</p>`);
                 loadMenu = false;
                 return;
             }
@@ -263,6 +315,11 @@
             if (parseInt(element.value) > parseInt(element.max)) element.value = element.max;
             if (parseInt(element.value) < parseInt(element.min)) element.value = element.min;
             refreshStock(selectedCategory);
+            if (parseInt(element.value) == 0) {
+                $(`.accordion-item[data-uuid="${element.dataset.priceUuid}"]`).remove();
+                selectedMenu = selectedMenu.filter(item => item !== element.dataset.priceUuid);
+                if (selectedMenu.length == 0) $('#chartList').append(`<p class="fs-5 text-center">--Keranjang kosong--</p>`);
+            }
         }
 
         function refreshStock(uuid, q) {
@@ -419,6 +476,11 @@
                     console.error(JSON.parse(xhr.responseText).message);
                 }
             });
+        }
+
+        function changeActivePaymentMethod(element) {
+            document.querySelectorAll('#paymentMethods .btn').forEach(btn => btn.classList.remove('active'));
+            element.classList.add('active');
         }
 
         function scrollCategoryMenu() {
