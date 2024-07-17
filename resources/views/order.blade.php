@@ -67,7 +67,7 @@
         }
 
         .scrollable-accordion {
-            max-height: 160px;
+            max-height: 180px;
             /* Atur tinggi maksimum sesuai kebutuhan Anda */
             overflow-y: scroll;
             -ms-overflow-style: none;
@@ -138,11 +138,12 @@
                         </div>
                         <div class="card-body d-flex flex-column w-100">
                             <div class="row-6 mb-4">
-                                <form id="chart" onsubmit="checkout(this)">
+                                <form id="chart" style="height: 180px;" onsubmit="checkout(this)">
                                     <div class="accordion scrollable-accordion" id="chartList">
                                         <p class="fs-5 text-center">--Keranjang kosong--</p>
                                     </div>
                                 </form>
+                                <hr>
                             </div>
                             <div class="row-6 d-flex justify-content-between flex-column h-100">
                                 <div class="d-flex flex-column align-self-start w-100" id="priceInfo">
@@ -161,7 +162,7 @@
                                     </div>
                                 </div>
                                 <div>
-                                    <div class="d-flex flex-column mb-3" id="buttonPayment">
+                                    <div class="d-flex flex-column mb-3">
                                         <p class="text-body-secondary mb-3 fw-semibold">Cara pembayaran:</p>
                                         <div class="d-flex gap-2" id="paymentMethods">
                                             <div
@@ -182,7 +183,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <button class="btn btn-primary w-100" disabled>
+                                    <button class="btn btn-primary w-100" id="buttonProceedOrder" disabled>
                                         Lanjutkan Pembayaran
                                     </button>
                                 </div>
@@ -293,9 +294,10 @@
                                         <div id="panelMenu${item.uuid}" class="accordion-collapse collapse">
                                             <div class="accordion-body">
                                                 <div class="input-group">
-                                                    <span class="input-group-text" id="basic-addon1">Qty</span>
+                                                    <span class="input-group-text" id="basic-addon1" data-price-uuid="${item.price.uuid}" onclick="decreaseValue(this)" style="cursor: pointer;">-</span>
                                                     <input type="hidden" name="uuid[]" value="${item.price.uuid}" required>
                                                     <input type="number" name="qty[]" class="form-control" min="0" data-price-uuid="${item.price.uuid}" oninput="debouncedvalidateQty(this)" max="${item.price.stock_remaining}" min="0" value="0" required>
+                                                    <span class="input-group-text" id="basic-addon2" data-price-uuid="${item.price.uuid}" onclick="increaseValue(this)" style="cursor: pointer;">+</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -311,6 +313,28 @@
             });
         }
 
+        function increaseValue(element) {
+            var input = $(`input[name="qty[]"][data-price-uuid="${element.dataset.priceUuid}"]`);
+            var value = parseInt(input.val());
+            var max = parseInt($(input).attr('max'));
+            value++;
+            if (parseInt(input.val()) === max) return;
+            if (parseInt(value) > parseInt(max)) value = max;
+            input.val(value);
+            debouncedvalidateQty(input[0]);
+        }
+
+        function decreaseValue(element) {
+            var input = $(`input[name="qty[]"][data-price-uuid="${element.dataset.priceUuid}"]`);
+            var value = parseInt(input.val());
+            var min = parseInt($(input).attr('min'));
+            value--;
+            if (parseInt(input.val()) === min) return;
+            if (parseInt(value) < parseInt(min)) value = min;
+            input.val(value);
+            debouncedvalidateQty(input[0]);
+        }
+
         function validateQty(element) {
             if (parseInt(element.value) > parseInt(element.max)) element.value = element.max;
             if (parseInt(element.value) < parseInt(element.min)) element.value = element.min;
@@ -319,7 +343,7 @@
                 $(`.accordion-item[data-uuid="${element.dataset.priceUuid}"]`).remove();
                 selectedMenu = selectedMenu.filter(item => item !== element.dataset.priceUuid);
                 if (selectedMenu.length == 0) $('#chartList').append(
-                `<p class="fs-5 text-center">--Keranjang kosong--</p>`);
+                    `<p class="fs-5 text-center">--Keranjang kosong--</p>`);
             }
         }
 
@@ -356,6 +380,13 @@
                     $('#subTotal').find('.fs-6.fw-bolder').html(response.meta.subtotal);
                     $('#discount').find('.fs-6.fw-bolder').html(response.meta.discount);
                     $('#totalPayment').find('.fs-5.fw-bolder').html(response.meta.total);
+
+                    if (selectedMenu.length > 0) {
+                        $('#buttonProceedOrder').prop('disabled', false);
+                    } else {
+                        $('#buttonProceedOrder').prop('disabled', true);
+                    }
+
                     $.each(response.data, function(index, item) {
                         let clicked = (selectedMenu.includes(item.uuid)) ? 'clicked' : '';
                         var card = `<div class="card bg-secondary m-0 text-white menu-card ${clicked}" title="${item.name}" style="cursor: pointer; ${(item.availability !== true) ? 'opacity: 0.5;' : ''}" data-uuid="${item.uuid}" ${(item.availability == true)?`onclick="selectMenu(this)"`:``}>
@@ -382,9 +413,11 @@
                                     if (parseInt(maxVal) === 0) {
                                         let parent = $(this).closest('.accordion-item');
                                         let priceUuid = parent.data('uuid');
-                                        selectedMenu = selectedMenu.filter(item => item !== priceUuid);
+                                        selectedMenu = selectedMenu.filter(item => item !==
+                                            priceUuid);
                                         parent.remove();
-                                        $(`.menu-card[data-uuid="${priceUuid}"]`).toggleClass('clicked');
+                                        $(`.menu-card[data-uuid="${priceUuid}"]`).toggleClass(
+                                            'clicked');
                                     }
                                 }
                             });
