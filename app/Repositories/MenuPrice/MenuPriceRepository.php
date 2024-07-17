@@ -106,6 +106,7 @@ class MenuPriceRepository extends BaseRepository
             $matchingData = collect($attributes['data'])->firstWhere('uuid', $item->uuid);
             if ($matchingData) {
                 $qty = $matchingData['qty'];
+                $item->subtotal = $qty * $item->price;
                 $item->recipes = $item->recipes->map(function ($recipe) use ($qty) {
                     $qtyAsked = $recipe->qty * $qty;
                     $recipe->history->inventory->qty = $recipe->history->inventory->qty - $qtyAsked;
