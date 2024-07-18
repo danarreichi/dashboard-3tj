@@ -183,7 +183,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <button class="btn btn-primary w-100" id="buttonProceedOrder" disabled>
+                                    <button class="btn btn-primary w-100" id="buttonProceedOrder" onclick="continueCheckout()" disabled>
                                         Lanjutkan Pembayaran
                                     </button>
                                 </div>
@@ -268,6 +268,29 @@
                 selectedMenu = selectedMenu.filter(item => item !== element.dataset.uuid);
                 debouncedGetMenu(selectedMenu);
             }
+        }
+
+        function continueCheckout() {
+            var data = [];
+            var idx = 0;
+            $.each($('#chart').serializeArray(), function(index, item) {
+                if (item.name === 'uuid[]') {
+                    data.push({
+                        uuid: item.value
+                    });
+                } else {
+                    data[idx].qty = item.value;
+                    idx++;
+                }
+            });
+            console.log({
+                data:data,
+                payment_method:'cash'
+            });
+        }
+
+        function checkout(element) {
+            event.preventDefault();
         }
 
         function getMenus(menuUuids) {
