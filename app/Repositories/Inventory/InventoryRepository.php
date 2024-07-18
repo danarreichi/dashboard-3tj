@@ -3,6 +3,8 @@
 namespace App\Repositories\Inventory;
 
 use App\Models\Inventory;
+use App\Models\InventoryHistory;
+use App\Models\SaleGroup;
 use App\Repositories\BaseRepository;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -45,5 +47,33 @@ class InventoryRepository extends BaseRepository
             'qty' => ($attributes['status'] === 'out') ? $inventory->qty - $attributes['qty'] : $inventory->qty + $attributes['qty']
         ]);
         return $query;
+    }
+
+    public function reduceInventoryStock(SaleGroup $saleGroup)
+    {
+        $saleGroup->sales->each(function($sale){
+            $qty = $sale->qty;
+            $sale->price->recipes->each(function($recipe) use ($qty) {
+                $qtyNeeded = $recipe->qty * $qty;
+                $inventoryQtyBefore = $recipe->history->inventory->qty;
+                $inventoryQtyAfter = $inventoryQtyBefore - $qtyNeeded;
+                $recipe->history->inventory->update([
+                    'qty' => $inventoryQtyAfter
+                ]);
+                $price = ($recipe->history->price / $recipe->history->qty) * $qtyNeeded;
+                InventoryHistory::create([
+                    'inventory_id' => $recipe->history->inventory->id,
+                    'user_id' => Auth::user()->id,
+                    'status' => InventoryHistory::STATUS_OUT,
+                    'qty' => $qtyNeeded,
+                    'price' => $price,
+                    'payload' => [
+                        'old_qty' => $inventoryQtyBefore,
+                        'new_qty' => $inventoryQtyAfter
+                    ]
+                ]);
+            });
+        });
+        return $saleGroup;
     }
 }
