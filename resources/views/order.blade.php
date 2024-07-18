@@ -67,7 +67,7 @@
         }
 
         .scrollable-accordion {
-            max-height: 180px;
+            max-height: 200px;
             /* Atur tinggi maksimum sesuai kebutuhan Anda */
             overflow-y: scroll;
             -ms-overflow-style: none;
@@ -138,7 +138,7 @@
                         </div>
                         <div class="card-body d-flex flex-column w-100">
                             <div class="row-6 mb-4">
-                                <form id="chart" style="height: 180px;" onsubmit="checkout(this)">
+                                <form id="chart" class="d-flex justify-content-center align-items-center" style="height: 200px;" onsubmit="checkout(this)">
                                     <div class="accordion scrollable-accordion" id="chartList">
                                         <p class="fs-5 text-center">--Keranjang kosong--</p>
                                     </div>
@@ -220,6 +220,13 @@
             scrollCategoryMenu();
         });
 
+        var Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000
+        });
+
         function selectCategory(element) {
             selectedCategory = element.dataset.uuid;
             $('.menu-category-card').each(function() {
@@ -270,6 +277,7 @@
             };
             if (menuUuids.length == 0) {
                 $('#chartList').empty();
+                $('#chart').addClass('align-items-center');
                 $('#chartList').append(`<p class="fs-5 text-center">--Keranjang kosong--</p>`);
                 loadMenu = false;
                 return;
@@ -286,23 +294,26 @@
                     $.each(response.data, function(index, item) {
                         var accordion = `<div class="accordion-item" data-uuid="${item.price.uuid}">
                                         <h2 class="accordion-header">
-                                            <button class="accordion-button collapsed fw-bolder" type="button"
-                                                data-bs-toggle="collapse" data-bs-target="#panelMenu${item.uuid}">
-                                                ${item.name}
+                                            <button class="btn w-100 collapsed d-flex justify-content-between align-items-center" type="button" data-bs-toggle="collapse" data-bs-target="#panelMenu${item.uuid}" title="${item.name}">
+                                                <p class="fw-bolder m-2 text-start" style="width:140px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.name}</p>
+                                                <p class="fs-6 fw-semibold m-2 w-auto">@${item.price_display}</p>
                                             </button>
                                         </h2>
                                         <div id="panelMenu${item.uuid}" class="accordion-collapse collapse">
                                             <div class="accordion-body">
                                                 <div class="input-group">
-                                                    <span class="input-group-text" id="basic-addon1" data-price-uuid="${item.price.uuid}" onclick="decreaseValue(this)" style="cursor: pointer;">-</span>
+                                                    <span class="input-group-text" data-price-uuid="${item.price.uuid}" onclick="decreaseValue(this)" style="cursor: pointer; user-select: none;">-</span>
                                                     <input type="hidden" name="uuid[]" value="${item.price.uuid}" required>
-                                                    <input type="number" name="qty[]" class="form-control" min="0" data-price-uuid="${item.price.uuid}" oninput="debouncedvalidateQty(this)" max="${item.price.stock_remaining}" min="0" value="0" required>
-                                                    <span class="input-group-text" id="basic-addon2" data-price-uuid="${item.price.uuid}" onclick="increaseValue(this)" style="cursor: pointer;">+</span>
+                                                    <input type="number" name="qty[]" class="form-control text-center" min="0" data-price-uuid="${item.price.uuid}" oninput="debouncedvalidateQty(this)" max="${item.price.stock_remaining}" min="0" value="0" required>
+                                                    <span class="input-group-text" data-price-uuid="${item.price.uuid}" onclick="increaseValue(this)" style="cursor: pointer; user-select: none;">+</span>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>`
-                        if ($(`#panelMenu${item.uuid}`).length === 0) $('#chartList').append(accordion);
+                        if ($(`#panelMenu${item.uuid}`).length === 0) {
+                            $('#chart').removeClass('align-items-center');
+                            $('#chartList').append(accordion);
+                        }
                     });
                     refreshStock(selectedCategory);
                     loadMenu = false;
@@ -341,9 +352,16 @@
             refreshStock(selectedCategory);
             if (parseInt(element.value) == 0) {
                 $(`.accordion-item[data-uuid="${element.dataset.priceUuid}"]`).remove();
+                Toast.fire({
+                    icon: 'success',
+                    title: '1 menu pada keranjang terhapus',
+                    timer: 1500
+                });
                 selectedMenu = selectedMenu.filter(item => item !== element.dataset.priceUuid);
-                if (selectedMenu.length == 0) $('#chartList').append(
-                    `<p class="fs-5 text-center">--Keranjang kosong--</p>`);
+                if (selectedMenu.length == 0) {
+                    $('#chart').addClass('align-items-center');
+                    $('#chartList').append(`<p class="fs-5 text-center">--Keranjang kosong--</p>`);
+                }
             }
         }
 
