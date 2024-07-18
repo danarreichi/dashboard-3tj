@@ -138,7 +138,8 @@
                         </div>
                         <div class="card-body d-flex flex-column w-100">
                             <div class="row-6 mb-4">
-                                <form id="chart" class="d-flex justify-content-center align-items-center" style="height: 200px;" onsubmit="checkout(this)">
+                                <form id="chart" class="d-flex justify-content-center align-items-center"
+                                    style="height: 200px;" onsubmit="checkout(this)">
                                     <div class="accordion scrollable-accordion" id="chartList">
                                         <p class="fs-5 text-center">--Keranjang kosong--</p>
                                     </div>
@@ -167,7 +168,7 @@
                                         <div class="d-flex gap-2" id="paymentMethods">
                                             <div
                                                 class="d-flex flex-column align-items-center justify-content-center w-100">
-                                                <button type="button" class="btn btn-outline-primary active w-100 mb-1"
+                                                <button type="button" data-method="cash" class="btn btn-outline-primary active w-100 mb-1"
                                                     onclick="changeActivePaymentMethod(this)">
                                                     <i class="bi bi-cash me-1"></i>
                                                 </button>
@@ -175,7 +176,7 @@
                                             </div>
                                             <div
                                                 class="d-flex flex-column align-items-center justify-content-center w-100">
-                                                <button type="button" class="btn btn-outline-primary w-100 mb-1"
+                                                <button type="button" data-method="qris" class="btn btn-outline-primary w-100 mb-1"
                                                     onclick="changeActivePaymentMethod(this)">
                                                     <i class="bi bi-qr-code me-1"></i>
                                                 </button>
@@ -183,7 +184,8 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <button class="btn btn-primary w-100" id="buttonProceedOrder" onclick="continueCheckout()" disabled>
+                                    <button class="btn btn-primary w-100" id="buttonProceedOrder"
+                                        onclick="continueCheckout()" disabled>
                                         Lanjutkan Pembayaran
                                     </button>
                                 </div>
@@ -283,10 +285,67 @@
                     idx++;
                 }
             });
-            console.log({
-                data:data,
-                payment_method:'cash'
-            });
+
+            let payment = $('#paymentMethods').find('button.active');
+
+            if (data.length === 0) {
+                Toast.fire({
+                    icon: 'warning',
+                    title: 'Pilih menu terlebih dahulu',
+                    timer: 1500
+                });
+                return;
+            } else {
+                var headers = {
+                    'Authorization': 'Bearer ' + localStorage.getItem("bearer")
+                };
+                $.ajax({
+                    url: host + 'checkout',
+                    type: 'POST',
+                    data: {
+                        data: data,
+                        payment_method: payment.data('method')
+                    },
+                    headers: headers,
+                    success: function(response) {
+                        selectedMenu = [];
+
+                        $('#chartList').empty();
+                        $('#chart').addClass('align-items-center');
+                        $('#chartList').append(`<p class="fs-5 text-center">--Keranjang kosong--</p>`);
+
+                        $('#subTotal').find('.fs-6.fw-bolder').html("Rp0,00");
+                        $('#discount').find('.fs-6.fw-bolder').html("Rp0,00");
+                        $('#totalPayment').find('.fs-5.fw-bolder').html("Rp0,00");
+
+                        let search = $('#search');
+                        getMenuPrices(search.data('categoryUuid'), search.val());
+
+                        Toast.fire({
+                            icon: 'success',
+                            title: 'Pembelian sukses',
+                            timer: 1500
+                        });
+                    },
+                    error: function(xhr, status, error) {
+                        clearInputErrors();
+                        let errors = JSON.parse(xhr.responseText).errors;
+                        $.each(errors, function(index, item) {
+                            let parts = index.split('.');
+                            let idx = parts.find(part => !isNaN(part));
+                            let inputField = $('input[name="qty[]"]').eq(idx);
+                            let inputFieldParent = inputField.parent();
+                            inputField.addClass('is-invalid');
+                            inputFieldParent.after('<div class="invalid-feedback d-block">' + item + '</div>');
+                        });
+                        Toast.fire({
+                            icon: 'error',
+                            title: 'Jumlah pembelian tidak boleh 0',
+                            timer: 1500
+                        });
+                    }
+                });
+            }
         }
 
         function checkout(element) {
