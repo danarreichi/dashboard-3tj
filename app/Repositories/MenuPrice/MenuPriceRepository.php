@@ -121,7 +121,7 @@ class MenuPriceRepository extends BaseRepository
                     if (array_key_exists('category_uuid', $param)) $q->whereHas('category', fn ($q) => $q->where('uuid', $param['category_uuid']));
                 }
             })
-            ->with(['menu', 'recipes.history.inventory'])
+            ->with(['menu'])
             ->where('status', 'active')
             ->addSelect([
                 'stock_remaining' => MenuRecipe::selectRaw('FLOOR(MIN(COALESCE(inventories.qty / menu_recipes.qty, 0)))')
@@ -141,7 +141,13 @@ class MenuPriceRepository extends BaseRepository
             ])
             ->get();
 
-        return $data;
+        $prices = collect($attributes['data'])->map(function($item) use ($data) {
+            $matchData = $data->where('uuid', $item['uuid'])->firstOrFail();
+            $item['subtotal'] = $matchData->price * $item['qty'];
+            return $item;
+        });
+
+        return [$data, $prices];
     }
 
     public function activatePrice(Menu $menu, MenuPrice $price)

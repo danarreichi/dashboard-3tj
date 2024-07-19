@@ -34,6 +34,7 @@ class CheckoutQtyRules implements Rule
             ->whereHas('menu')
             ->with(['menu', 'recipes.history.inventory'])
             ->where('status', 'active')
+            ->whereIn('uuid', collect($this->attributes)->pluck('uuid'))
             ->addSelect([
                 'stock_remaining' => MenuRecipe::selectRaw('FLOOR(MIN(COALESCE(inventories.qty / menu_recipes.qty, 0)))')
                     ->join('inventory_histories', 'menu_recipes.inventory_history_id', '=', 'inventory_histories.id')
@@ -74,7 +75,7 @@ class CheckoutQtyRules implements Rule
         });
 
         if ($setNewMenuStock->firstWhere('uuid', $allValue['uuid'])->stock_remaining < 0) {
-            $this->errorMessage = "Stok menu sudah habis";
+            $this->errorMessage = "Stok menu tidak mencukupi";
             return false;
         }
 

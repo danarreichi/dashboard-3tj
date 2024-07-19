@@ -56,8 +56,8 @@ class MenuPriceController extends Controller
 
     public function listActivePriceTemp(RefreshMenuStockRequest $request)
     {
-        $data = $this->repository->listActivePriceTemp($request->validated(), $request['query_params']);
-        $subtotal = $data->sum('subtotal') ?? 0;
+        [$data, $prices] = $this->repository->listActivePriceTemp($request->validated(), $request['query_params']);
+        $subtotal = collect($prices)->sum('subtotal');
         $discount = 0;
         $total = ($subtotal - $discount);
         return ActiveMenuPriceResource::collection($data)->additional([
