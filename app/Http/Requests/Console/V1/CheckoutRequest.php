@@ -30,7 +30,8 @@ class CheckoutRequest extends FormRequest
             'data' => ['required', 'array', 'min:1'],
             'data.*.uuid' => ['required', Rule::exists('menu_prices', 'uuid')->where('status', 'active')],
             'data.*.qty' => ['required', 'numeric', 'min:1', new CheckoutQtyRules($this->data)],
-            'discount' => ['nullable', Rule::exists('discounts', 'code')],
+            'discount.qty' => ['required', 'numeric', 'min:0', Rule::when($this->input('discount.type') === 'persentase', ['max:100'])],
+            'discount.type' => ['required', 'in:persentase,nominal'],
             'payment_method' => ['required', 'in:cash,qris'],
         ];
     }

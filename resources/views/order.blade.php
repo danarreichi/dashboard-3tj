@@ -137,7 +137,7 @@
                             <h4 class="card-title">Pesanan</h4>
                         </div>
                         <div class="card-body d-flex flex-column w-100">
-                            <div class="row-6 mb-4">
+                            <div class="row-6">
                                 <form id="chart" class="d-flex justify-content-center align-items-center"
                                     style="height: 200px;" onsubmit="checkout(this)">
                                     <div class="accordion scrollable-accordion" id="chartList">
@@ -153,8 +153,8 @@
                                         <p class="fs-6 fw-bolder">Rp0,00</p>
                                     </div>
                                     <div class="d-flex justify-content-between" id="discount">
-                                        <p class="fs-6">Diskon: </p>
-                                        <p class="fs-6 fw-bolder">Rp0,00</p>
+                                        <p class="fs-6 mb-0">Diskon: </p>
+                                        <p class="fs-6 mb-0 fw-bolder">Rp0,00</p>
                                     </div>
                                     <hr>
                                     <div class="d-flex justify-content-between" id="totalPayment">
@@ -163,31 +163,62 @@
                                     </div>
                                 </div>
                                 <div>
-                                    <div class="d-flex flex-column mb-3">
-                                        <p class="text-body-secondary mb-3 fw-semibold">Cara pembayaran:</p>
-                                        <div class="d-flex gap-2" id="paymentMethods">
-                                            <div
-                                                class="d-flex flex-column align-items-center justify-content-center w-100">
-                                                <button type="button" data-method="cash" class="btn btn-outline-primary active w-100 mb-1"
-                                                    onclick="changeActivePaymentMethod(this)">
-                                                    <i class="bi bi-cash me-1"></i>
-                                                </button>
-                                                <p class="fw-semibold">Cash</p>
-                                            </div>
-                                            <div
-                                                class="d-flex flex-column align-items-center justify-content-center w-100">
-                                                <button type="button" data-method="qris" class="btn btn-outline-primary w-100 mb-1"
-                                                    onclick="changeActivePaymentMethod(this)">
-                                                    <i class="bi bi-qr-code me-1"></i>
-                                                </button>
-                                                <p class="fw-semibold">QRIS</p>
+
+
+                                    <div class="mb-4" id="discountDiv" style="display: none;">
+                                        <p class="text-body-secondary fw-semibold">Diskon:</p>
+                                        <div class="input-group">
+                                            <button class="btn btn-primary dropdown-toggle" type="button"
+                                                id="dropdownDiscountType" data-bs-toggle="dropdown"
+                                                aria-expanded="false">Nominal</button>
+                                            <ul class="dropdown-menu">
+                                                <li style="cursor: pointer;"><a class="dropdown-item"
+                                                        data-type="Nominal"
+                                                        onclick="changeDiscountType(this)">Nominal</a></li>
+                                                <li style="cursor: pointer;"><a class="dropdown-item"
+                                                        data-type="Persentase"
+                                                        onclick="changeDiscountType(this)">Persentase</a></li>
+                                            </ul>
+                                            <input type="hidden" name="discountType" value="nominal" required>
+                                            <input type="number" class="form-control" name="discount" min="0"
+                                                oninput="debouncedValidateDiscount(this)"
+                                                placeholder="Rp">
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3" id="paymentMethodDiv">
+                                        <div class="d-flex flex-column">
+                                            <p class="text-body-secondary fw-semibold">Cara pembayaran:</p>
+                                            <div class="d-flex gap-2" id="paymentMethods">
+                                                <div
+                                                    class="d-flex flex-column align-items-center justify-content-center w-100">
+                                                    <button type="button" data-method="cash"
+                                                        class="btn btn-outline-primary active w-100 mb-1"
+                                                        onclick="changeActivePaymentMethod(this)">
+                                                        <i class="bi bi-cash me-1"></i>
+                                                    </button>
+                                                    <p class="fw-semibold mb-0">Cash</p>
+                                                </div>
+                                                <div
+                                                    class="d-flex flex-column align-items-center justify-content-center w-100">
+                                                    <button type="button" data-method="qris"
+                                                        class="btn btn-outline-primary w-100 mb-1"
+                                                        onclick="changeActivePaymentMethod(this)">
+                                                        <i class="bi bi-qr-code me-1"></i>
+                                                    </button>
+                                                    <p class="fw-semibold mb-0">QRIS</p>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
+
                                     <button class="btn btn-primary w-100" id="buttonProceedOrder"
                                         onclick="continueCheckout()" disabled>
                                         Lanjutkan Pembayaran
                                     </button>
+
+                                    <p class="fw-semibold fs-6 text-center mb-0 mt-3" id="formToggleButton"
+                                        style="cursor: pointer;">Tambahkan diskon?</p>
                                 </div>
                             </div>
                         </div>
@@ -214,12 +245,22 @@
     <script>
         var selectedMenu = [];
         var selectedCategory;
+        var discountType = "nominal";
 
         $(document).ready(function() {
             getProfile();
             getMenuCategory();
             getMenuPrices();
             scrollCategoryMenu();
+        });
+
+        $('#formToggleButton').click(function() {
+            $('#discountDiv, #paymentMethodDiv').toggle();
+            if ($('#discountDiv').is(':visible')) {
+                $(this).html('Metode pembayaran?');
+            } else {
+                $(this).html('Tambahkan diskon?');
+            }
         });
 
         var Toast = Swal.mixin({
@@ -254,9 +295,7 @@
         let loadMenu = false;
 
         function selectMenu(element) {
-            if (loadMenu === true) {
-                return;
-            }
+            // if (loadMenu === true) return;
             $(element).toggleClass('clicked');
             if ($(element).hasClass('clicked')) {
                 selectedMenu.push(element.dataset.uuid);
@@ -304,6 +343,10 @@
                     type: 'POST',
                     data: {
                         data: data,
+                        discount: {
+                            type: $('#discountDiv').find('input[name="discountType"]').val(),
+                            qty: $('#discountDiv').find('input[type="number"][name="discount"]').val() || 0
+                        },
                         payment_method: payment.data('method')
                     },
                     headers: headers,
@@ -317,6 +360,8 @@
                         $('#subTotal').find('.fs-6.fw-bolder').html("Rp0,00");
                         $('#discount').find('.fs-6.fw-bolder').html("Rp0,00");
                         $('#totalPayment').find('.fs-5.fw-bolder').html("Rp0,00");
+
+                        $('#discountDiv').find('input[type="number"]').val(null);
 
                         let search = $('#search');
                         getMenuPrices(search.data('categoryUuid'), search.val());
@@ -336,7 +381,8 @@
                             let inputField = $('input[name="qty[]"]').eq(idx);
                             let inputFieldParent = inputField.parent();
                             inputField.addClass('is-invalid');
-                            inputFieldParent.after('<div class="invalid-feedback d-block">' + item + '</div>');
+                            inputFieldParent.after('<div class="invalid-feedback d-block">' + item +
+                                '</div>');
                         });
                         Toast.fire({
                             icon: 'error',
@@ -447,6 +493,32 @@
             }
         }
 
+        function validateDiscount(element) {
+            if (parseInt($(element).val()) < parseInt($(element).attr('min'))) $(element).val(0);
+            if ($(element).attr('max')) {
+                if (parseInt($(element).val()) > parseInt($(element).attr('max'))) $(element).val(parseInt($(element).attr(
+                    'max')));
+            }
+            refreshStock(selectedCategory);
+        }
+
+        function changeDiscountType(element) {
+            $('#dropdownDiscountType').html(`${element.dataset.type}`);
+            let input = $('#discountDiv').find('input[type="number"]');
+            let type = $('#discountDiv').find('input[name="discountType"]');
+            input.val(null);
+            if (element.dataset.type === "Nominal") {
+                input.removeAttr('max');
+                input.attr('placeholder', 'Rp');
+                type.val('nominal');
+            }
+            if (element.dataset.type === "Persentase") {
+                input.attr('max', 100);
+                input.attr('placeholder', '%');
+                type.val('persentase');
+            }
+        }
+
         function refreshStock(uuid, q) {
             var data = [];
             var queryParams = {
@@ -472,6 +544,10 @@
                 type: 'POST',
                 data: {
                     data: data,
+                    discount: {
+                        type: $('#discountDiv').find('input[name="discountType"]').val(),
+                        qty: $('#discountDiv').find('input[type="number"][name="discount"]').val() || 0
+                    },
                     query_params: queryParams
                 },
                 headers: headers,
@@ -567,6 +643,7 @@
         }
 
         const debouncedGetMenu = debounce(getMenus, 500);
+        const debouncedValidateDiscount = debounce(validateDiscount, 500);
         const debouncedSearch = debounce(searchMenu, 500);
         const debouncedvalidateQty = debounce(validateQty, 500);
 

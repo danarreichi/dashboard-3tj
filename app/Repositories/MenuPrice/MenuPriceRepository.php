@@ -147,7 +147,7 @@ class MenuPriceRepository extends BaseRepository
             ])
             ->get();
 
-        return [$data, $prices];
+        return [$data, $prices, $attributes['discount']];
     }
 
     public function activatePrice(Menu $menu, MenuPrice $price)
