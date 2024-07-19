@@ -56,15 +56,15 @@ class MenuPriceController extends Controller
 
     public function listActivePriceTemp(RefreshMenuStockRequest $request)
     {
-        [$data, $prices] = $this->repository->listActivePriceTemp($request->validated(), $request['query_params']);
+        [$data, $prices, $discount] = $this->repository->listActivePriceTemp($request->validated(), $request['query_params']);
         $subtotal = collect($prices)->sum('subtotal');
-        $discount = 0;
-        $total = ($subtotal - $discount);
+        $convertedDiscount = ($discount['type'] === "persentase") ? ($subtotal * ($discount['qty'] / 100)) : $discount['qty'];
+        $total = ($subtotal - $convertedDiscount);
         return ActiveMenuPriceResource::collection($data)->additional([
             'meta' => [
                 'subtotal' => "Rp" . number_format($subtotal, 2, ",", "."),
-                'discount' => "Rp" . number_format($discount, 2, ",", "."),
-                'total' => "Rp" . number_format($total, 2, ",", "."),
+                'discount' => "Rp" . number_format($convertedDiscount, 2, ",", "."),
+                'total' => "Rp" . number_format(($total < 0) ? 0 : $total, 2, ",", "."),
             ]
         ]);
     }
