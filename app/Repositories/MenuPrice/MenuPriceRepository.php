@@ -2,6 +2,7 @@
 
 namespace App\Repositories\MenuPrice;
 
+use App\Models\Inventory;
 use App\Models\InventoryHistory;
 use App\Models\Menu;
 use App\Models\MenuPrice;
@@ -84,62 +85,63 @@ class MenuPriceRepository extends BaseRepository
 
     public function listActivePriceTemp(array $attributes, $param)
     {
+        $recipes = MenuRecipe::query()
+            ->with('history.inventory')
+            ->whereHas('price', function($q) use ($attributes) {
+                $q->where('status', 'active');
+                $q->whereIn('uuid', collect($attributes['data'])->pluck('uuid'));
+            })
+            ->get();
+
+        $neededRecipes = $recipes->map(function($recipe) use ($attributes) {
+            $matchingData = collect($attributes['data'])->firstWhere('uuid', $recipe->price->uuid);
+            $recipe->qty_asked = $matchingData['qty'] * $recipe->qty;
+            return $recipe;
+        });
+
+        $inventories = Inventory::get();
+
+        $neededRecipes->each(function($recipe) use (&$inventories) {
+            $inventory = $inventories->where('id', $recipe->history->inventory->id)->first();
+            if ($inventory) $inventory->qty -= $recipe->qty_asked;
+        });
+
+        // Prepare the subquery values
+        $inventoriesSubQueryValues = $inventories->map(function ($inventory) {
+            return "SELECT " . (int) $inventory->id . " AS id, " . (int) $inventory->qty . " AS qty";
+        })->implode(' UNION ALL ');
+
+        // Build the complete query with the subquery directly
+        $inventoriesSubQuery = DB::table(DB::raw("($inventoriesSubQueryValues) AS inventories"));
+
         $data = parent::index()
-            ->whereHas('menu')
+            ->whereHas('menu', function($q) use ($param) {
+                if($param){
+                    $q->where('name', 'LIKE', '%'. $param['q']. '%');
+                    if (array_key_exists('category_uuid', $param)) $q->whereHas('category', fn ($q) => $q->where('uuid', $param['category_uuid']));
+                }
+            })
             ->with(['menu', 'recipes.history.inventory'])
             ->where('status', 'active')
             ->addSelect([
                 'stock_remaining' => MenuRecipe::selectRaw('FLOOR(MIN(COALESCE(inventories.qty / menu_recipes.qty, 0)))')
                     ->join('inventory_histories', 'menu_recipes.inventory_history_id', '=', 'inventory_histories.id')
-                    ->join('inventories', 'inventory_histories.inventory_id', '=', 'inventories.id')
+                    ->joinSub($inventoriesSubQuery, 'inventories', function ($join) {
+                        $join->on('inventory_histories.inventory_id', '=', 'inventories.id');
+                    })
                     ->whereColumn('menu_prices.id', 'menu_recipes.menu_price_id')
                     ->limit(1),
                 'availability' => MenuRecipe::selectRaw('CASE WHEN FLOOR(MIN(COALESCE(inventories.qty / menu_recipes.qty, 0))) > 0 THEN true ELSE false END')
                     ->join('inventory_histories', 'menu_recipes.inventory_history_id', '=', 'inventory_histories.id')
-                    ->join('inventories', 'inventory_histories.inventory_id', '=', 'inventories.id')
+                    ->joinSub($inventoriesSubQuery, 'inventories', function ($join) {
+                        $join->on('inventory_histories.inventory_id', '=', 'inventories.id');
+                    })
                     ->whereColumn('menu_prices.id', 'menu_recipes.menu_price_id')
                     ->limit(1)
             ])
             ->get();
 
-        $setNewInventoryTemp = $data->map(function ($item) use ($attributes) {
-            $matchingData = collect($attributes['data'])->firstWhere('uuid', $item->uuid);
-            if ($matchingData) {
-                $qty = $matchingData['qty'];
-                $item->subtotal = $qty * $item->price;
-                $item->recipes = $item->recipes->map(function ($recipe) use ($qty) {
-                    $qtyAsked = $recipe->qty * $qty;
-                    $recipe->history->inventory->qty = $recipe->history->inventory->qty - $qtyAsked;
-                    return $recipe;
-                });
-            }
-            return $item;
-        });
-
-        $setNewMenuStock = $setNewInventoryTemp->map(function ($item) {
-            $stockRemaining = [];
-            $item->recipes->map(function ($recipe) use (&$stockRemaining) {
-                $result = floor($recipe->history->inventory->qty / $recipe->qty);
-                array_push($stockRemaining, $result);
-            });
-            $item->stock_remaining = min($stockRemaining);
-            if (min($stockRemaining) == 0) $item->availability = 0;
-            return $item;
-        });
-
-        $filteredMenuStock = $setNewMenuStock;
-        if ($param) {
-            $filteredMenuStock = $filteredMenuStock->filter(function ($item) use ($param) {
-                return stripos($item->menu->name, $param['q']) !== false;
-            });
-            if (array_key_exists('category_uuid', $param)) {
-                $filteredMenuStock = $filteredMenuStock->filter(function ($item) use ($param) {
-                    return $item->menu->category->uuid === $param['category_uuid'];
-                });
-            }
-        }
-
-        return $filteredMenuStock;
+        return $data;
     }
 
     public function activatePrice(Menu $menu, MenuPrice $price)
