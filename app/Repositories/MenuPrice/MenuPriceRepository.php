@@ -99,6 +99,12 @@ class MenuPriceRepository extends BaseRepository
             return $recipe;
         });
 
+        $prices = collect($attributes['data'])->map(function($item) {
+            $matchData = MenuPrice::where('uuid', $item['uuid'])->firstOrFail();
+            $item['subtotal'] = $matchData->price * $item['qty'];
+            return $item;
+        });
+
         $inventories = Inventory::get();
 
         $neededRecipes->each(function($recipe) use (&$inventories) {
@@ -140,12 +146,6 @@ class MenuPriceRepository extends BaseRepository
                     ->limit(1)
             ])
             ->get();
-
-        $prices = collect($attributes['data'])->map(function($item) use ($data) {
-            $matchData = MenuPrice::where('uuid', $item['uuid'])->firstOrFail();
-            $item['subtotal'] = $matchData->price * $item['qty'];
-            return $item;
-        });
 
         return [$data, $prices];
     }
