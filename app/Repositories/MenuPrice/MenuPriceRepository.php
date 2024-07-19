@@ -142,7 +142,7 @@ class MenuPriceRepository extends BaseRepository
             ->get();
 
         $prices = collect($attributes['data'])->map(function($item) use ($data) {
-            $matchData = $data->where('uuid', $item['uuid'])->firstOrFail();
+            $matchData = MenuPrice::where('uuid', $item['uuid'])->firstOrFail();
             $item['subtotal'] = $matchData->price * $item['qty'];
             return $item;
         });
