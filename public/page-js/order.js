@@ -498,7 +498,7 @@ function getMenuCategory(element) {
     });
 }
 
-const debouncedGetMenu = debounce(getMenus, 250);
+const debouncedGetMenu = debounce(getMenus, 350);
 const debouncedValidateDiscount = debounce(validateDiscount, 500);
 const debouncedSearch = debounce(searchMenu, 500);
 const debouncedvalidateQty = debounce(validateQty, 500);
