@@ -65,6 +65,7 @@ class MenuPriceController extends Controller
                 'subtotal' => "Rp" . number_format($subtotal, 2, ",", "."),
                 'discount' => "Rp" . number_format($convertedDiscount, 2, ",", "."),
                 'total' => "Rp" . number_format(($total < 0) ? 0 : $total, 2, ",", "."),
+                'total_calc' => ($total < 0) ? 0 : $total,
             ]
         ]);
     }
