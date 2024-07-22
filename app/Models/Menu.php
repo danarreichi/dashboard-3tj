@@ -36,6 +36,11 @@ class Menu extends BaseModel
         return $this->hasMany(MenuPrice::class);
     }
 
+    public function sales()
+    {
+        return $this->hasManyThrough(Sale::class, MenuPrice::class);
+    }
+
     public function price()
     {
         return $this->hasOne(MenuPrice::class)->where('status', 'active');
