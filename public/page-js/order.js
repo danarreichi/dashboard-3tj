@@ -182,6 +182,7 @@ function continueCheckout() {
 
                 $('#discountDiv').find('input[type="number"]').val(null);
 
+                $('#continueCheckoutButton').attr('disabled', true);
                 let search = $('#search');
                 getMenuPrices(search.data('categoryUuid'), search.val());
 
@@ -214,11 +215,33 @@ function continueCheckout() {
 }
 
 function setExchangeValue(element) {
-    let value = parseInt($(element).val());
+
+    // Remove all non-digit characters
+    let value = element.value.replace(/\D/g, '');
+
+    // Convert to number and format it
+    if (value) {
+        value = parseFloat(value).toLocaleString('de-DE', {
+            maximumFractionDigits: 2
+        });
+    }
+
+    // Update the input value
+    element.value = value;
+
     let totalCheckout = parseInt($('#checkoutTotal').val());
-    $('#customerExchangeMoney').val(value - totalCheckout);
-    if (parseInt(value - totalCheckout) > 0) $('#continueCheckoutButton').attr('disabled', false);
-    if (parseInt(value - totalCheckout) < 0 || isNaN(value)) $('#continueCheckoutButton').attr('disabled', true);
+    let exchange = parseInt(value.replace(/\D/g, '')) - totalCheckout;
+    let exchangeDisplay = parseFloat(exchange).toLocaleString('de-DE', {
+        maximumFractionDigits: 2
+    })
+    if (exchange > 0) {
+        $('#customerExchangeMoney').val(exchangeDisplay);
+        $('#continueCheckoutButton').attr('disabled', false);
+    }
+    if (exchange < 0 || isNaN(value)) {
+        $('#customerExchangeMoney').val(null);
+        $('#continueCheckoutButton').attr('disabled', true);
+    }
 }
 
 function checkout(element) {
@@ -269,6 +292,10 @@ function getMenus(menuUuids) {
                     $('#chart').removeClass('align-items-center');
                     $('#chartList').append(accordion);
                 }
+            });
+            $('.accordion').find('.accordion-item').each(function(){
+                let uuid = $(this).data('uuid');
+                if(!selectedMenu.includes(uuid)) $(this).remove();
             });
             refreshStock(selectedCategory);
             loadMenu = false;
@@ -471,11 +498,10 @@ function getMenuCategory(element) {
     });
 }
 
-const debouncedGetMenu = debounce(getMenus, 500);
+const debouncedGetMenu = debounce(getMenus, 250);
 const debouncedValidateDiscount = debounce(validateDiscount, 500);
 const debouncedSearch = debounce(searchMenu, 500);
 const debouncedvalidateQty = debounce(validateQty, 500);
-const debouncedSetExchangeValue = debounce(setExchangeValue, 500);
 
 function searchMenu(element) {
     if ($('.accordion-item').hasClass('accordion-item')) {

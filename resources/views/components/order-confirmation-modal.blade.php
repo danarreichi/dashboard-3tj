@@ -17,14 +17,14 @@
                     <div class="form-group">
                         <div class="input-group">
                             <span class="input-group-text">Rp</span>
-                            <input id="customerMoney" name="customer_money" oninput="debouncedSetExchangeValue(this)" type="number" min="100" step="100" placeholder="Masukkan uang pelanggan" class="form-control" required>
+                            <input id="customerMoney" name="customer_money" oninput="setExchangeValue(this)" inputmode="numeric" type="text" min="100" placeholder="Masukkan uang pelanggan" class="form-control" required>
                         </div>
                     </div>
                     <label for="name" class="form-label">Kembalian</label>
                     <div class="form-group">
                         <div class="input-group">
                             <span class="input-group-text">Rp</span>
-                            <input id="customerExchangeMoney" name="customer_exchange_money" type="number" min="100" step="100" placeholder="Kembalian pelanggan" class="form-control" readonly>
+                            <input id="customerExchangeMoney" name="customer_exchange_money" type="text" min="100" step="100" placeholder="Kembalian pelanggan" class="form-control" readonly>
                         </div>
                     </div>
                 </div>
