@@ -67,7 +67,7 @@
         }
 
         .scrollable-accordion {
-            max-height: 160px;
+            max-height: 200px;
             /* Atur tinggi maksimum sesuai kebutuhan Anda */
             overflow-y: scroll;
             -ms-overflow-style: none;
@@ -137,60 +137,94 @@
                             <h4 class="card-title">Pesanan</h4>
                         </div>
                         <div class="card-body d-flex flex-column w-100">
-                            <div class="row-6 mb-4">
-                                <form id="chart" onsubmit="checkout(this)">
+                            <div class="row-6">
+                                <form id="chart" class="d-flex justify-content-center align-items-center"
+                                    style="height: 200px;" onsubmit="checkout(this)">
                                     <div class="accordion scrollable-accordion" id="chartList">
                                         <p class="fs-5 text-center">--Keranjang kosong--</p>
                                     </div>
                                 </form>
+                                <hr>
                             </div>
                             <div class="row-6 d-flex justify-content-between flex-column h-100">
                                 <div class="d-flex flex-column align-self-start w-100" id="priceInfo">
                                     <div class="d-flex justify-content-between" id="subTotal">
                                         <p class="fs-6">Subtotal: </p>
-                                        <p class="fs-6 fw-bolder">Rp4500</p>
+                                        <p class="fs-6 fw-bolder">Rp0,00</p>
                                     </div>
                                     <div class="d-flex justify-content-between" id="discount">
-                                        <p class="fs-6">Diskon: </p>
-                                        <p class="fs-6 fw-bolder">N/A</p>
+                                        <p class="fs-6 mb-0">Diskon: </p>
+                                        <p class="fs-6 mb-0 fw-bolder">Rp0,00</p>
                                     </div>
                                     <hr>
                                     <div class="d-flex justify-content-between" id="totalPayment">
                                         <p class="fs-5">Total: </p>
-                                        <p class="fs-5 fw-bolder">N/A</p>
+                                        <p class="fs-5 fw-bolder">Rp0,00</p>
                                     </div>
                                 </div>
                                 <div>
-                                    <div class="d-flex flex-column mb-3" id="buttonPayment">
-                                        <p class="text-body-secondary mb-3 fw-semibold">Cara pembayaran:</p>
-                                        <div class="d-flex gap-2" id="paymentMethods">
-                                            <div
-                                                class="d-flex flex-column align-items-center justify-content-center w-100">
-                                                <button type="button" class="btn btn-outline-primary active w-100 mb-1"
-                                                    onclick="changeActivePaymentMethod(this)">
-                                                    <i class="bi bi-cash me-1"></i>
-                                                </button>
-                                                <p class="fw-semibold">Cash</p>
-                                            </div>
-                                            <div
-                                                class="d-flex flex-column align-items-center justify-content-center w-100">
-                                                <button type="button" class="btn btn-outline-primary w-100 mb-1"
-                                                    onclick="changeActivePaymentMethod(this)">
-                                                    <i class="bi bi-qr-code me-1"></i>
-                                                </button>
-                                                <p class="fw-semibold">QRIS</p>
+
+
+                                    <div class="mb-4" id="discountDiv" style="display: none;">
+                                        <p class="text-body-secondary fw-semibold">Diskon:</p>
+                                        <div class="input-group">
+                                            <button class="btn btn-primary dropdown-toggle" type="button"
+                                                id="dropdownDiscountType" data-bs-toggle="dropdown"
+                                                aria-expanded="false">Nominal</button>
+                                            <ul class="dropdown-menu">
+                                                <li style="cursor: pointer;"><a class="dropdown-item"
+                                                        data-type="Nominal"
+                                                        onclick="changeDiscountType(this)">Nominal</a></li>
+                                                <li style="cursor: pointer;"><a class="dropdown-item"
+                                                        data-type="Persentase"
+                                                        onclick="changeDiscountType(this)">Persentase</a></li>
+                                            </ul>
+                                            <input type="hidden" name="discountType" value="nominal" required>
+                                            <input type="number" class="form-control" name="discount" min="0"
+                                                oninput="debouncedValidateDiscount(this)" placeholder="Rp">
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3" id="paymentMethodDiv">
+                                        <div class="d-flex flex-column">
+                                            <p class="text-body-secondary fw-semibold">Cara pembayaran:</p>
+                                            <div class="d-flex gap-2" id="paymentMethods">
+                                                <div
+                                                    class="d-flex flex-column align-items-center justify-content-center w-100">
+                                                    <button type="button" data-method="cash"
+                                                        class="btn btn-outline-primary active w-100 mb-1"
+                                                        onclick="changeActivePaymentMethod(this)">
+                                                        <i class="bi bi-cash me-1"></i>
+                                                    </button>
+                                                    <p class="fw-semibold mb-0">Cash</p>
+                                                </div>
+                                                <div
+                                                    class="d-flex flex-column align-items-center justify-content-center w-100">
+                                                    <button type="button" data-method="qris"
+                                                        class="btn btn-outline-primary w-100 mb-1"
+                                                        onclick="changeActivePaymentMethod(this)">
+                                                        <i class="bi bi-qr-code me-1"></i>
+                                                    </button>
+                                                    <p class="fw-semibold mb-0">QRIS</p>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                    <button class="btn btn-primary w-100" disabled>
+
+                                    <button class="btn btn-primary w-100" id="buttonProceedOrder"
+                                        onclick="checkoutConfirmation()" disabled>
                                         Lanjutkan Pembayaran
                                     </button>
+
+                                    <p class="fw-semibold fs-6 text-center mb-0 mt-3" id="formToggleButton"
+                                        style="cursor: pointer;">Tambahkan diskon?</p>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+            <x-order-confirmation-modal></x-order-confirmation-modal>
         </div>
     </div>
     </div>
@@ -207,314 +241,7 @@
     <script src="{{ asset('dist/assets/extensions/sweetalert2/sweetalert2.min.js') }}"></script>
     {{-- Page JS --}}
     <script src="{{ asset('page-js-min/base.js') }}"></script>
-    <script src="{{ asset('page-js-min/menu-category.js') }}"></script>
-    <script>
-        var selectedMenu = [];
-        var selectedCategory;
-
-        $(document).ready(function() {
-            getProfile();
-            getMenuCategory();
-            getMenuPrices();
-            scrollCategoryMenu();
-        });
-
-        function selectCategory(element) {
-            selectedCategory = element.dataset.uuid;
-            $('.menu-category-card').each(function() {
-                $(this).removeClass('menu-category-card-selected');
-                $(this).removeClass('clicked');
-            });
-            if ($(element).hasClass('menu-category-card-selected')) {
-                $(element).removeClass('menu-category-card-selected');
-                $(element).toggleClass('clicked');
-            } else {
-                $(element).toggleClass('clicked');
-                $(element).addClass('menu-category-card-selected');
-            }
-            if (!element.dataset.uuid) $('#search').removeAttr('data-category-uuid');
-            $('#search').attr('data-category-uuid', element.dataset.uuid);
-            if ($('.accordion-item').hasClass('accordion-item')) {
-                refreshStock(element.dataset.uuid);
-            } else {
-                getMenuPrices(element.dataset.uuid);
-            }
-        }
-
-        let loadMenu = false;
-
-        function selectMenu(element) {
-            if (loadMenu === true) {
-                return;
-            }
-            $(element).toggleClass('clicked');
-            if ($(element).hasClass('clicked')) {
-                selectedMenu.push(element.dataset.uuid);
-                debouncedGetMenu(selectedMenu);
-                if (selectedMenu.length > 0) $('#chartList').find('p.fs-5.text-center').remove();
-            } else {
-                let hehe = $('#chartList').find(`.accordion-item[data-uuid="${element.dataset.uuid}"]`).find(
-                    'input[type="number"][name="qty[]"]').val(0);
-                if ($('.accordion-item').hasClass('accordion-item')) refreshStock(selectedCategory);
-                $('#chartList').find(`.accordion-item[data-uuid="${element.dataset.uuid}"]`).remove();
-                selectedMenu = selectedMenu.filter(item => item !== element.dataset.uuid);
-                debouncedGetMenu(selectedMenu);
-            }
-        }
-
-        function getMenus(menuUuids) {
-            loadMenu = true;
-            var queryParams = {
-                'uuids': menuUuids
-            };
-            if (menuUuids.length == 0) {
-                $('#chartList').empty();
-                $('#chartList').append(`<p class="fs-5 text-center">--Keranjang kosong--</p>`);
-                loadMenu = false;
-                return;
-            }
-            var headers = {
-                'Authorization': 'Bearer ' + localStorage.getItem("bearer")
-            };
-            $.ajax({
-                url: host + 'menu',
-                type: 'GET',
-                data: queryParams,
-                headers: headers,
-                success: function(response) {
-                    $.each(response.data, function(index, item) {
-                        var accordion = `<div class="accordion-item" data-uuid="${item.price.uuid}">
-                                        <h2 class="accordion-header">
-                                            <button class="accordion-button collapsed fw-bolder" type="button"
-                                                data-bs-toggle="collapse" data-bs-target="#panelMenu${item.uuid}">
-                                                ${item.name}
-                                            </button>
-                                        </h2>
-                                        <div id="panelMenu${item.uuid}" class="accordion-collapse collapse">
-                                            <div class="accordion-body">
-                                                <div class="input-group">
-                                                    <span class="input-group-text" id="basic-addon1">Qty</span>
-                                                    <input type="hidden" name="uuid[]" value="${item.price.uuid}" required>
-                                                    <input type="number" name="qty[]" class="form-control" min="0" data-price-uuid="${item.price.uuid}" oninput="debouncedvalidateQty(this)" max="${item.price.stock_remaining}" min="0" value="0" required>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>`
-                        if ($(`#panelMenu${item.uuid}`).length === 0) $('#chartList').append(accordion);
-                    });
-                    refreshStock(selectedCategory);
-                    loadMenu = false;
-                },
-                error: function(xhr, status, error) {
-                    console.error(JSON.parse(xhr.responseText).message);
-                }
-            });
-        }
-
-        function validateQty(element) {
-            if (parseInt(element.value) > parseInt(element.max)) element.value = element.max;
-            if (parseInt(element.value) < parseInt(element.min)) element.value = element.min;
-            refreshStock(selectedCategory);
-            if (parseInt(element.value) == 0) {
-                $(`.accordion-item[data-uuid="${element.dataset.priceUuid}"]`).remove();
-                selectedMenu = selectedMenu.filter(item => item !== element.dataset.priceUuid);
-                if (selectedMenu.length == 0) $('#chartList').append(`<p class="fs-5 text-center">--Keranjang kosong--</p>`);
-            }
-        }
-
-        function refreshStock(uuid, q) {
-            var data = [];
-            var queryParams = {
-                'category_uuid': uuid,
-                'q': (q) ? q : $('#search').val()
-            };
-            var idx = 0;
-            $.each($('#chart').serializeArray(), function(index, item) {
-                if (item.name === 'uuid[]') {
-                    data.push({
-                        uuid: item.value
-                    });
-                } else {
-                    data[idx].qty = item.value;
-                    idx++;
-                }
-            });
-            var headers = {
-                'Authorization': 'Bearer ' + localStorage.getItem("bearer")
-            };
-            $.ajax({
-                url: host + 'menu-price',
-                type: 'POST',
-                data: {
-                    data: data,
-                    query_params: queryParams
-                },
-                headers: headers,
-                success: function(response) {
-                    $('#menuPrices').empty();
-                    $.each(response.data, function(index, item) {
-                        let clicked = (selectedMenu.includes(item.uuid)) ? 'clicked' : '';
-                        var card = `<div class="card bg-secondary m-0 text-white menu-card ${clicked}" title="${item.name}" style="cursor: pointer; ${(item.availability !== true) ? 'opacity: 0.5;' : ''}" data-uuid="${item.uuid}" ${(item.availability == true)?`onclick="selectMenu(this)"`:``}>
-                                        <img src="${pageHost}${item.image}" class="card-img-top" style="width: 200px; height: 200px; object-fit: cover;">
-                                        <div class="card-body">
-                                            <h5 class="card-title" style="width:140px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.name}</h5>
-                                            <p class="card-text">${item.price}</p>
-                                            ${(item.availability !== true)?`<p class="card-text">Habis</p>`:`<p class="card-text">Stok: ${item.stock_remaining}</p>`}
-                                        </div>
-                                    </div>`;
-                        $('#menuPrices').append(card);
-                    });
-                    $.each(response.data, function(index, item) {
-                        if ($('.accordion-item').hasClass('accordion-item')) {
-                            $('input[type="number"][name="qty[]"]').each(function() {
-                                let priceUuid = $(this).data('priceUuid');
-                                if (priceUuid === item.uuid) {
-                                    let value = $(this).val();
-                                    let maxVal = parseInt(value) + parseInt(item
-                                        .stock_remaining);
-                                    $(this).attr({
-                                        'max': maxVal
-                                    });
-                                }
-                            });
-                        }
-                    });
-                },
-                error: function(xhr, status, error) {
-                    console.error(JSON.parse(xhr.responseText).message);
-                }
-            });
-        }
-
-        function getMenuCategory(element) {
-            var queryParams = {
-                'hasMenu': true
-            };
-            var headers = {
-                'Authorization': 'Bearer ' + localStorage.getItem("bearer")
-            };
-            $.ajax({
-                url: host + 'menu-category',
-                type: 'GET',
-                data: queryParams,
-                headers: headers,
-                success: function(response) {
-                    $('#kategoriMenu').empty();
-                    var allCard = `<div class="card bg-secondary menu-category-card-selected clicked m-0 text-white menu-category-card" style="cursor: pointer; flex-shrink: 0; min-width: 150px;" onclick="selectCategory(this)">
-                                        <div class="card-body">
-                                            <p class="card-text">Semua</p>
-                                        </div>
-                                    </div>`;
-
-                    $('#kategoriMenu').append(allCard);
-                    $.each(response.data, function(index, item) {
-                        var card = `<div class="card bg-secondary m-0 text-white menu-category-card" style="cursor: pointer; flex-shrink: 0; min-width: 150px;" data-uuid="${item.uuid}" onclick="selectCategory(this)">
-                                        <div class="card-body">
-                                            <p class="card-text">${item.name}</p>
-                                        </div>
-                                    </div>`;
-                        $('#kategoriMenu').append(card);
-                    });
-                },
-                error: function(xhr, status, error) {
-                    console.error(JSON.parse(xhr.responseText).message);
-                }
-            });
-        }
-
-        const debouncedGetMenu = debounce(getMenus, 500);
-        const debouncedSearch = debounce(searchMenu, 500);
-        const debouncedvalidateQty = debounce(validateQty, 500);
-
-        function searchMenu(element) {
-            if ($('.accordion-item').hasClass('accordion-item')) {
-                refreshStock(element.dataset.categoryUuid);
-            } else {
-                getMenuPrices(element.dataset.categoryUuid, element.value)
-            }
-        }
-
-        function debounce(func, delay) {
-            let debounceTimer;
-            return function() {
-                const context = this;
-                const args = arguments;
-                clearTimeout(debounceTimer);
-                debounceTimer = setTimeout(() => func.apply(context, args), delay);
-            };
-        }
-
-        function getMenuPrices(uuid, q) {
-            var queryParams = {
-                'category_uuid': uuid,
-                'q': (q) ? q : $('#search').val()
-            };
-            var headers = {
-                'Authorization': 'Bearer ' + localStorage.getItem("bearer")
-            };
-            $.ajax({
-                url: host + 'menu-price',
-                type: 'GET',
-                data: queryParams,
-                headers: headers,
-                success: function(response) {
-                    $('#menuPrices').empty();
-                    $.each(response.data, function(index, item) {
-                        let clicked = (selectedMenu.includes(item.uuid)) ? 'clicked' : '';
-                        var card = `<div class="card bg-secondary m-0 text-white menu-card ${clicked}" title="${item.name}" style="cursor: pointer; ${(item.availability !== true) ? 'opacity: 0.5;' : ''}" data-uuid="${item.uuid}" ${(item.availability == true)?`onclick="selectMenu(this)"`:``}>
-                                        <img src="${pageHost}${item.image}" class="card-img-top" style="width: 200px; height: 200px; object-fit: cover;">
-                                        <div class="card-body">
-                                            <h5 class="card-title" style="width:140px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.name}</h5>
-                                            <p class="card-text">${item.price}</p>
-                                            ${(item.availability !== true)?`<p class="card-text">Habis</p>`:`<p class="card-text">Stok: ${item.stock_remaining}</p>`}
-                                        </div>
-                                    </div>`;
-                        $('#menuPrices').append(card);
-                    });
-                },
-                error: function(xhr, status, error) {
-                    console.error(JSON.parse(xhr.responseText).message);
-                }
-            });
-        }
-
-        function changeActivePaymentMethod(element) {
-            document.querySelectorAll('#paymentMethods .btn').forEach(btn => btn.classList.remove('active'));
-            element.classList.add('active');
-        }
-
-        function scrollCategoryMenu() {
-            const $kategoriMenu = $('#kategoriMenu');
-            let isDown = false;
-            let startX;
-            let scrollLeft;
-
-            $kategoriMenu.on('mousedown', function(e) {
-                isDown = true;
-                $kategoriMenu.addClass('active');
-                startX = e.pageX - $kategoriMenu.offset().left;
-                scrollLeft = $kategoriMenu.scrollLeft();
-            });
-
-            $kategoriMenu.on('mouseleave', function() {
-                isDown = false;
-                $kategoriMenu.removeClass('active');
-            });
-
-            $kategoriMenu.on('mouseup', function() {
-                isDown = false;
-                $kategoriMenu.removeClass('active');
-            });
-
-            $kategoriMenu.on('mousemove', function(e) {
-                if (!isDown) return;
-                e.preventDefault();
-                const x = e.pageX - $kategoriMenu.offset().left;
-                const walk = (x - startX) * 1; //scroll-fast
-                $kategoriMenu.scrollLeft(scrollLeft - walk);
-            });
-        }
-    </script>
+    <script src="{{ asset('page-js/order.js') }}"></script>
 </body>
 
 </html>

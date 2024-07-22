@@ -36,16 +36,20 @@
                                             <div class="row w-100">
                                                 <div class="col-5">
                                                     <label for="qty" class="form-label">Qty Restock</label>
-                                                    <input type="number" name="qty" min="1"
-                                                        class="form-control" placeholder="Masukkan qty restock" required>
+                                                    <div class="input-group">
+                                                        <input type="number" name="qty" min="1" class="form-control" placeholder="Masukkan qty restock" required>
+                                                        <span class="input-group-text" id="inventoryUnit">.00</span>
+                                                    </div>
                                                 </div>
                                                 <div class="col-5">
                                                     <label for="price" class="form-label">Harga Restock</label>
-                                                    <input type="number" name="price" min="1"
-                                                        class="form-control" placeholder="Masukkan harga restock" required>
+                                                    <div class="input-group">
+                                                        <span class="input-group-text">Rp</span>
+                                                        <input type="number" name="price" min="1" class="form-control" placeholder="Masukkan harga restock" required>
+                                                    </div>
                                                 </div>
                                                 <div class="col-2 d-grid align-items-end">
-                                                    <button class="btn btn-success w-100" data-status="in" onclick="document.getElementById('status').value = this.dataset.status">
+                                                    <button class="btn btn-success w-100 h-100" data-status="in" onclick="document.getElementById('status').value = this.dataset.status">
                                                         <span>Simpan</span>
                                                     </button>
                                                 </div>

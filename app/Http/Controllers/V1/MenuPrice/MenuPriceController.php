@@ -40,7 +40,7 @@ class MenuPriceController extends Controller
 
     public function store(Menu $menu, StoreMenuPriceRequest $request)
     {
-        $data = DB::transaction(function() use ($menu, $request) {
+        $data = DB::transaction(function () use ($menu, $request) {
             $menuPrice = $this->repository->insertPriceAndRecipes($menu, $request->validated());
             $menuPrice->load('recipes');
             return $menuPrice;
@@ -56,28 +56,35 @@ class MenuPriceController extends Controller
 
     public function listActivePriceTemp(RefreshMenuStockRequest $request)
     {
-        $data = $this->repository->listActivePriceTemp($request->validated(), $request['query_params']);
-        return ActiveMenuPriceResource::collection($data);
+        [$data, $prices, $discount] = $this->repository->listActivePriceTemp($request->validated(), $request['query_params']);
+        $subtotal = collect($prices)->sum('subtotal');
+        $convertedDiscount = ($discount['type'] === "persentase") ? ($subtotal * ($discount['qty'] / 100)) : $discount['qty'];
+        $total = ($subtotal - $convertedDiscount);
+        return ActiveMenuPriceResource::collection($data)->additional([
+            'meta' => [
+                'subtotal' => "Rp" . number_format($subtotal, 2, ",", "."),
+                'discount' => "Rp" . number_format($convertedDiscount, 2, ",", "."),
+                'total' => "Rp" . number_format(($total < 0) ? 0 : $total, 2, ",", "."),
+                'total_calc' => ($total < 0) ? 0 : $total,
+            ]
+        ]);
     }
 
     public function show(Menu $menu, MenuPrice $menuPrice)
     {
-
     }
 
     public function update(UpdateMenuRequest $request, Menu $menu, MenuPrice $menuPrice)
     {
-
     }
 
     public function destroy(Menu $menu, MenuPrice $menuPrice)
     {
-
     }
 
     public function activate(Menu $menu, MenuPrice $price)
     {
-        $price = DB::transaction(function() use ($menu, $price) {
+        $price = DB::transaction(function () use ($menu, $price) {
             return $this->repository->activatePrice($menu, $price);
         });
         return $price;

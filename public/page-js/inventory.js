@@ -312,6 +312,7 @@ function getModalInventoryName(element) {
             $('#uuidAdjust').val(response.data.uuid);
             $('#modalInventoryName').html(response.data.name);
             $('#modalInventoryQty').html(`${response.data.qty} ${response.data.unit}`);
+            $('#inventoryUnit').html(`${response.data.unit}`);
         },
         error: function (xhr, status, error) {
             console.error(JSON.parse(xhr.responseText).message);
@@ -521,8 +522,9 @@ function adjustStock(element) {
                     if (xhr.responseJSON) {
                         $.each(xhr.responseJSON.errors, function (fieldName, errorMessage) {
                             var inputField = $('[name="' + fieldName + '"]');
+                            var parentField = inputField.closest('.input-group');
                             inputField.addClass('is-invalid');
-                            inputField.after('<div class="invalid-feedback">' + errorMessage + '</div>');
+                            parentField.after('<div class="invalid-feedback d-block">' + errorMessage + '</div>');
                         });
                         getModalInventoryName({
                             dataset: {
