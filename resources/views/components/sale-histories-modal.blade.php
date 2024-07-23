@@ -3,9 +3,9 @@
     aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg" role="document">
         <div class="modal-content">
-            <div class="modal-header bg-info">
+            <div class="modal-header bg-success">
                 <div class="d-flex flex-row flex-grow-1 w-25 justify-content-center align-items-center">
-                    <h5 class="modal-title text-black" id="myModalLabel160">
+                    <h5 class="modal-title text-white" id="myModalLabel160">
                         <i style="font-size: 1.2rem;" class="bi bi-clock-history me-2"></i>Riwayat Penjualan
                     </h5>
                 </div>
