@@ -370,7 +370,7 @@ function getInventoryHistoryDropdown(inventoryUuid) {
                 '<option value="" style="display: none;" disabled selected>Pilih harga restock terbaru</option>'
             );
             response.data.forEach(function (item, index) {
-                selectElement.append(`<option value="${item.uuid}" data-price-per-unit="${item.price_per_unit}">${item.price}</option>`);
+                selectElement.append(`<option value="${item.uuid}" data-price-per-unit="${item.price_per_unit}">${item.price} @${item.qty}</option>`);
             });
         },
         error: function (xhr, status, error) {
