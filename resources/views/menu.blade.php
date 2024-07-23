@@ -21,8 +21,6 @@
     {{-- DataTables --}}
     <link rel="stylesheet" href="{{ asset('dist/assets/extensions/datatables.net-bs5/css/dataTables.bootstrap5.min.css') }}">
     <link rel="stylesheet" crossorigin href="{{ asset('dist/assets/compiled/css/table-datatable-jquery.css') }}">
-    {{-- Flatpickr --}}
-    <link rel="stylesheet" href="{{ asset('dist/assets/extensions/flatpickr/flatpickr.min.css') }}">
 </head>
 
 <body>
@@ -122,12 +120,9 @@
     <script src="{{ asset('dist/assets/extensions/datatables.net-bs5/js/dataTables.bootstrap5.min.js') }}"></script>
     <!-- SweetAlert2 -->
     <script src="{{ asset('dist/assets/extensions/sweetalert2/sweetalert2.min.js') }}"></script>
-    {{-- Flatpickr --}}
-    <script src="{{ asset('dist/assets/extensions/flatpickr/flatpickr.min.js') }}"></script>
-    <script src="{{ asset('dist/assets/extensions/flatpickr/l10n/id.js') }}"></script>
     {{-- Page JS --}}
     <script src="{{ asset('page-js-min/base.js') }}"></script>
-    <script src="{{ asset('page-js/menu.js') }}"></script>
+    <script src="{{ asset('page-js-min/menu.js') }}"></script>
 </body>
 
 </html>

@@ -60,15 +60,6 @@ class MenuRepository extends BaseRepository
         $filters = [AllowedFilter::trashed()];
         $sorts = ['name', 'updated_at'];
         $data = parent::index($filters, $sorts)
-            ->withCount(['sales' => function ($q) {
-                if (request('start_between')) {
-                    $startBetween = array_values(array_filter(explode(",", request('start_between'))));
-                    if (count($startBetween) === 2) {
-                        $q->whereDate('sales.created_at', '>=', $startBetween[0]);
-                        $q->whereDate('sales.created_at', '<=', $startBetween[1]);
-                    }
-                }
-            }])
             ->with(['sales' => function ($q) {
                 $q->with('price');
                 if (request('start_between')) {

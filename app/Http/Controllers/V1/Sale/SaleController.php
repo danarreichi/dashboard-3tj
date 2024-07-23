@@ -34,13 +34,16 @@ class SaleController extends Controller
         ]);
     }
 
-    public function menuSale(Menu $menu)
+    public function menuSale($menu)
     {
-        [$data, $minDate, $maxDate] = $this->repository->listSalesByMenu($menu);
+        $menu = Menu::withTrashed()->where('uuid', $menu)->firstOrFail();
+        [$data, $countSale, $totalSale] = $this->repository->listSalesByMenu($menu);
+
         return SaleResource::collection($data)->additional([
             'meta' => [
-                'min_date' => $minDate,
-                'max_date' => $maxDate
+                'product_name' => $menu->name,
+                'count_sale' => $countSale,
+                'total_sale' => "Rp" . number_format($totalSale, 2, ",", ".")
             ]
         ]);
     }
