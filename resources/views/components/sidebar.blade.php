@@ -43,7 +43,7 @@
         </div>
         <div class="sidebar-menu">
             <ul class="menu">
-                <li class="sidebar-title">Database</li>
+                <li class="sidebar-title">Data Utama</li>
 
                 <li class="sidebar-item {{ request()->routeIs('inventory') ? 'active' : '' }}">
                     <a href="/inventory" class='sidebar-link'>
@@ -66,21 +66,28 @@
                     </a>
                 </li>
 
-                <li class="sidebar-title">Pengaturan</li>
-
-                <li class="sidebar-item {{ request()->routeIs('account') ? 'active' : '' }}">
-                    <a href="account" class='sidebar-link'>
-                        <i class="bi bi-person-circle"></i>
-                        <span>Accounts</span>
-                    </a>
-                </li>
-
                 <li class="sidebar-title">Kasir</li>
 
                 <li class="sidebar-item {{ request()->routeIs('order') ? 'active' : '' }}">
                     <a href="order" class='sidebar-link'>
                         <i class="bi bi-cart"></i>
                         <span>Pesan</span>
+                    </a>
+                </li>
+
+                <li class="sidebar-item {{ request()->routeIs('sale') ? 'active' : '' }}">
+                    <a href="sale" class='sidebar-link'>
+                        <i class="bi bi-bar-chart"></i>
+                        <span>Penjualan</span>
+                    </a>
+                </li>
+
+                <li class="sidebar-title">Pengaturan</li>
+
+                <li class="sidebar-item {{ request()->routeIs('account') ? 'active' : '' }}">
+                    <a href="account" class='sidebar-link'>
+                        <i class="bi bi-person-circle"></i>
+                        <span>Accounts</span>
                     </a>
                 </li>
             </ul>

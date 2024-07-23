@@ -19,8 +19,11 @@
     {{-- SweetAlert2 --}}
     <link rel="stylesheet" crossorigin href="{{ asset('dist/assets/extensions/sweetalert2/sweetalert2.min.css') }}">
     {{-- DataTables --}}
-    <link rel="stylesheet" href="{{ asset('dist/assets/extensions/datatables.net-bs5/css/dataTables.bootstrap5.min.css') }}">
+    <link rel="stylesheet"
+        href="{{ asset('dist/assets/extensions/datatables.net-bs5/css/dataTables.bootstrap5.min.css') }}">
     <link rel="stylesheet" crossorigin href="{{ asset('dist/assets/compiled/css/table-datatable-jquery.css') }}">
+    {{-- Flatpickr --}}
+    <link rel="stylesheet" href="{{ asset('dist/assets/extensions/flatpickr/flatpickr.min.css') }}">
 </head>
 
 <body>
@@ -35,7 +38,7 @@
             </header>
 
             <div class="page-heading d-flex align-items-center justify-content-between">
-                <h3>Menu</h3>
+                <h3>Penjualan</h3>
                 <x-profile-dropdown></x-profile-dropdown>
             </div>
             <div class="page-content">
@@ -59,11 +62,13 @@
                                                     </select>
                                                 </div>
                                             </div>
-                                            <div class="col-auto ms-auto align-self-end" id="addMenuBtn" style="display: none;">
-                                                <button data-bs-toggle="modal" data-bs-target="#primary"
-                                                    class="btn btn-primary w-100 d-flex justify-content-center align-items-center">
-                                                    <span class="me-2"><i class="bi bi-person-plus-fill"></i></span>Tambah menu
-                                                </button>
+                                            <div class="col-auto ms-auto align-self-end w-25">
+                                                <label for="dateRange" class="form-label">Filter
+                                                    tanggal:</label>
+                                                <input type="text" name="dateRange" style="cursor: pointer;"
+                                                    id="dateRange"
+                                                    class="form-control flatpickr-range w-100 flatpickr-input"
+                                                    placeholder="Pilih tanggal..." onchange="getDatepickr(this)">
                                             </div>
                                         </div>
 
@@ -75,9 +80,9 @@
                                                         <th>No.</th>
                                                         <th>Nama</th>
                                                         <th>Kategori</th>
-                                                        <th>Harga</th>
-                                                        <th>Terakhir Diperbarui</th>
-                                                        <th>Aksi</th>
+                                                        <th>Jumlah Terjual</th>
+                                                        <th>Pendapatan</th>
+                                                        <th>Riwayat</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -103,10 +108,7 @@
                     </div>
                 </div>
             </footer>
-            <x-add-menu-modal></x-add-menu-modal>
-            <x-edit-menu-modal></x-edit-menu-modal>
-            <x-menu-prices-modal></x-menu-prices-modal>
-            <x-add-menu-price-modal></x-add-menu-price-modal>
+            <x-sale-histories-modal></x-sale-histories-modal>
         </div>
     </div>
     <script src="{{ asset('dist/assets/static/js/components/dark.js') }}"></script>
@@ -120,9 +122,12 @@
     <script src="{{ asset('dist/assets/extensions/datatables.net-bs5/js/dataTables.bootstrap5.min.js') }}"></script>
     <!-- SweetAlert2 -->
     <script src="{{ asset('dist/assets/extensions/sweetalert2/sweetalert2.min.js') }}"></script>
+    {{-- Flatpickr --}}
+    <script src="{{ asset('dist/assets/extensions/flatpickr/flatpickr.min.js') }}"></script>
+    <script src="{{ asset('dist/assets/extensions/flatpickr/l10n/id.js') }}"></script>
     {{-- Page JS --}}
     <script src="{{ asset('page-js-min/base.js') }}"></script>
-    <script src="{{ asset('page-js-min/menu.js') }}"></script>
+    <script src="{{ asset('page-js-min/sale.js') }}"></script>
 </body>
 
 </html>

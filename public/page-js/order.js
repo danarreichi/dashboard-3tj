@@ -233,8 +233,8 @@ function setExchangeValue(element) {
     let exchange = parseInt(value.replace(/\D/g, '')) - totalCheckout;
     let exchangeDisplay = parseFloat(exchange).toLocaleString('de-DE', {
         maximumFractionDigits: 2
-    })
-    if (exchange > 0) {
+    });
+    if (exchange >= 0) {
         $('#customerExchangeMoney').val(exchangeDisplay);
         $('#continueCheckoutButton').attr('disabled', false);
     }
