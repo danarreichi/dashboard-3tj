@@ -8,22 +8,24 @@ use App\Http\Resources\Console\V1\MenuSaleResource;
 use App\Http\Resources\Console\V1\SaleResource;
 use App\Models\Menu;
 use App\Repositories\Inventory\InventoryRepository;
+use App\Repositories\Menu\MenuRepository;
 use App\Repositories\Sale\SaleRepository;
 use Illuminate\Support\Facades\DB;
 
 class SaleController extends Controller
 {
-    private $repository, $inventoryRepository;
+    private $repository, $menuRepository, $inventoryRepository;
 
-    public function __construct(SaleRepository $repository, InventoryRepository $inventoryRepository)
+    public function __construct(SaleRepository $repository, InventoryRepository $inventoryRepository, MenuRepository $menuRepository)
     {
         $this->repository = $repository;
+        $this->menuRepository = $menuRepository;
         $this->inventoryRepository = $inventoryRepository;
     }
 
     public function index()
     {
-        [$menuSales, $minDate, $maxDate] = $this->repository->listMenuSales();
+        [$menuSales, $minDate, $maxDate] = $this->menuRepository->listMenuSales();
         return MenuSaleResource::collection($menuSales)->additional([
             'meta' => [
                 'start_date' => $minDate,
