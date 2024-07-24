@@ -237,6 +237,7 @@ function setExchangeValue(element) {
     if (exchange >= 0) {
         $('#customerExchangeMoney').val(exchangeDisplay);
         $('#continueCheckoutButton').attr('disabled', false);
+        return;
     }
     if (exchange < 0 || isNaN(value)) {
         $('#customerExchangeMoney').val(null);

@@ -17,19 +17,19 @@
                     <div class="form-group">
                         <div class="input-group">
                             <span class="input-group-text">Rp</span>
-                            <input id="customerMoney" name="customer_money" oninput="setExchangeValue(this)" inputmode="numeric" type="text" min="100" placeholder="Masukkan uang pelanggan" class="form-control" required>
+                            <input id="customerMoney" name="customer_money" autocomplete="off" oninput="setExchangeValue(this)" inputmode="numeric" type="text" placeholder="Masukkan uang pelanggan" class="form-control" required>
                         </div>
                     </div>
                     <label for="name" class="form-label">Kembalian</label>
                     <div class="form-group">
                         <div class="input-group">
                             <span class="input-group-text">Rp</span>
-                            <input id="customerExchangeMoney" name="customer_exchange_money" type="text" min="100" step="100" placeholder="Kembalian pelanggan" class="form-control" readonly>
+                            <input id="customerExchangeMoney" name="customer_exchange_money" type="text" placeholder="Kembalian pelanggan" class="form-control" readonly>
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-light-secondary" data-bs-dismiss="modal" onclick="clearForm('moneyExchangeForm'); clearInputErrors();">
+                    <button type="button" class="btn btn-light-secondary" data-bs-dismiss="modal">
                         <i class="bx bx-x d-block d-sm-none"></i>
                         <span class="d-none d-sm-block">Batal</span>
                     </button>
