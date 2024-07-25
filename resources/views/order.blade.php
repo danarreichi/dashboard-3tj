@@ -224,6 +224,7 @@
                     </div>
                 </div>
             </div>
+            <x-order-receipt></x-order-receipt>
             <x-order-confirmation-modal></x-order-confirmation-modal>
         </div>
     </div>

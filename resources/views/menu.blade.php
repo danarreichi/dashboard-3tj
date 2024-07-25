@@ -122,7 +122,7 @@
     <script src="{{ asset('dist/assets/extensions/sweetalert2/sweetalert2.min.js') }}"></script>
     {{-- Page JS --}}
     <script src="{{ asset('page-js-min/base.js') }}"></script>
-    <script src="{{ asset('page-js/menu.js') }}"></script>
+    <script src="{{ asset('page-js-min/menu.js') }}"></script>
 </body>
 
 </html>

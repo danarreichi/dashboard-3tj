@@ -53,6 +53,7 @@ class InventoryRepository extends BaseRepository
     {
         $saleGroup->sales->each(function($sale){
             $qty = $sale->qty;
+            $sale->price->menu;
             $sale->price->recipes->each(function($recipe) use ($qty) {
                 $qtyNeeded = $recipe->qty * $qty;
                 $inventoryQtyBefore = $recipe->history->inventory->qty;

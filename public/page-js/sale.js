@@ -237,6 +237,15 @@ let customized_datatable = $('#menuTable').DataTable({
             json.recordsTotal = json.meta.total;
             json.recordsFiltered = json.meta.total;
 
+            if (json.meta.start_date && json.meta.end_date) {
+                let minDate = json.meta.start_date.split(' ')[0]; // Get "YYYY-MM-DD" part
+                let maxDate = json.meta.end_date.split(' ')[0]; // Get "YYYY-MM-DD" part
+
+                // Update Flatpickr minDate and maxDate dynamically
+                flatPickr.set('minDate', minDate);
+                flatPickr.set('maxDate', maxDate);
+            }
+
             metaValue = json.meta;
             json.data = json.data;
             return JSON.stringify(json);
