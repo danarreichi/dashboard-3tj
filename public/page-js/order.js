@@ -186,11 +186,23 @@ function continueCheckout() {
                 let search = $('#search');
                 getMenuPrices(search.data('categoryUuid'), search.val());
 
-                Toast.fire({
-                    icon: 'success',
-                    title: 'Pembelian sukses',
-                    timer: 1500
+                Swal2.fire({
+                    icon: "question",
+                    title: "Print Struk Pembelian?",
+                    text: "Apakah anda ingin mencetak struk pembelian ini?",
+                    showCancelButton: true,
+                    confirmButtonText: 'Ya',
+                    cancelButtonText: 'Tidak',
+                    reverseButtons: false // optional, makes the "No" button come first
+                }).then((result) => {
+                    if (result.isConfirmed) printReceipt(response);
                 });
+
+                // Toast.fire({
+                //     icon: 'success',
+                //     title: 'Pembelian sukses',
+                //     timer: 1500
+                // });
             },
             error: function (xhr, status, error) {
                 clearInputErrors();
@@ -212,6 +224,83 @@ function continueCheckout() {
             }
         });
     }
+}
+
+function printReceipt(response) {
+    const receiptElement = document.getElementById('receipt');
+
+    // Populate receipt data
+    document.getElementById('date').textContent = new Date(response.created_at).toLocaleDateString();
+    document.getElementById('receiptNo').textContent = response.id;
+    document.getElementById('total').textContent = `Rp ${response.total.toLocaleString('id-ID')}`;
+    document.getElementById('discountReceipt').textContent = `Rp ${response.discount.toLocaleString('id-ID')}`;
+    document.getElementById('totalAfterDiscount').textContent = `Rp ${response.total_after_discount.toLocaleString('id-ID')}`;
+    document.getElementById('note').textContent = response.note;
+
+    const itemsContainer = document.getElementById('items');
+    itemsContainer.innerHTML = ''; // Clear previous items
+
+    // Create a table for items
+    const table = document.createElement('table');
+    table.style.width = '100%';
+    table.style.borderCollapse = 'collapse';
+    response.sales.forEach(sale => {
+        const row = table.insertRow();
+
+        const nameCell = row.insertCell(0);
+        nameCell.textContent = sale.price.menu.name;
+        nameCell.style.textAlign = 'left';
+        nameCell.style.maxWidth = '100px';
+        nameCell.style.overflow = 'hidden';
+
+        const qtyCell = row.insertCell(1);
+        qtyCell.textContent = `x ${sale.qty}`;
+        qtyCell.style.textAlign = 'center';
+
+        const priceCell = row.insertCell(2);
+        priceCell.textContent = `Rp ${parseInt(sale.price.price).toLocaleString('id-ID')}`;
+        priceCell.style.textAlign = 'right';
+    });
+
+    itemsContainer.appendChild(table);
+
+    // Display receipt and print
+    const printContents = receiptElement.innerHTML;
+
+    const printWindow = window.open('', '', 'height=600,width=800');
+    printWindow.document.write(`
+        <html>
+        <head>
+            <title>Print Receipt</title>
+            <style>
+                @media print {
+                    body, html {
+                        width: 58mm;
+                    }
+                    body {
+                        margin: 0;
+                        padding: 0;
+                    }
+                    .receipt {
+                        width: 100%;
+                    }
+                }
+            </style>
+        </head>
+        <body>
+            <div class="receipt" style="margin-bottom: 3cm;">${printContents}</div>
+            <br>
+            <br>
+            <div style="text-align: center;">***</div>
+        </body>
+        </html>
+    `);
+
+    printWindow.document.close();
+
+    printWindow.print();
+    const isMobile = navigator.userAgentData.mobile;
+    if (!isMobile) printWindow.close();
 }
 
 function setExchangeValue(element) {
