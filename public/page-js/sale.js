@@ -246,6 +246,12 @@ let customized_datatable = $('#menuTable').DataTable({
                 flatPickr.set('maxDate', maxDate);
             }
 
+            if (json.meta.earnings && json.meta.earningsAfterDiscount && json.meta.usedDiscounts) {
+                $('#earnings').html(json.meta.earnings);
+                $('#usedDiscounts').html(json.meta.usedDiscounts);
+                $('#earningsAfterDiscount').html(json.meta.earningsAfterDiscount);
+            }
+
             metaValue = json.meta;
             json.data = json.data;
             return JSON.stringify(json);

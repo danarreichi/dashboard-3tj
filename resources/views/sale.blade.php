@@ -46,6 +46,15 @@
                     <div class="col-12 col-lg-12">
                         <div class="row">
                             <div class="col-12">
+                                <div class="card mb-3">
+                                    <div class="p-3 m-0 card-body d-flex justify-content-around">
+                                        <h5 class="m-0">Pendapatan: <span id="earnings">Rp0,00</span></h5>
+                                        <h5 class="m-0">Diskon Terpakai: <span id="usedDiscounts">Rp0,00</span></h5>
+                                        <h5 class="m-0">Pendapatan Setelah Diskon: <span id="earningsAfterDiscount">Rp0,00</span></h5>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12">
                                 <div class="card">
                                     <div class="card-header">
                                         <h4>Daftar Menu</h4>
