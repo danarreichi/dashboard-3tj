@@ -1,5 +1,5 @@
-<div id="receipt" style="display: none;">
-    <h1>3Tj</h1>
+<div id="receipt" style="display: none; font-size: 60%; font-family: monospace;">
+    <h1 style="text-align: center;">3TJ</h1>
     <p>Tanggal: <span id="date"></span></p>
     <p>Struk No: <span id="receiptNo"></span></p>
     <hr>

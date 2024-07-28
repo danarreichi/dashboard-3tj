@@ -267,7 +267,7 @@ function printReceipt(response) {
     // Display receipt and print
     const printContents = receiptElement.innerHTML;
 
-    const printWindow = window.open('', '', 'height=600,width=800');
+    const printWindow = window.open('', '', 'height=auto,width=800');
     printWindow.document.write(`
         <html>
         <head>
@@ -289,8 +289,6 @@ function printReceipt(response) {
         </head>
         <body>
             <div class="receipt" style="margin-bottom: 3cm;">${printContents}</div>
-            <br>
-            <br>
             <div style="text-align: center;">***</div>
         </body>
         </html>
