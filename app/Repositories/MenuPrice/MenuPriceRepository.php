@@ -68,12 +68,12 @@ class MenuPriceRepository extends BaseRepository
                 });
             })->with('menu')->where('status', 'active')
             ->addSelect([
-                'stock_remaining' => MenuRecipe::selectRaw('FLOOR(MIN(COALESCE(inventories.qty / menu_recipes.qty, 0)))')
+                'stock_remaining' => MenuRecipe::selectRaw('CAST(MIN(COALESCE(inventories.qty / menu_recipes.qty, 0)) AS INTEGER)')
                     ->join('inventory_histories', 'menu_recipes.inventory_history_id', '=', 'inventory_histories.id')
                     ->join('inventories', 'inventory_histories.inventory_id', '=', 'inventories.id')
                     ->whereColumn('menu_prices.id', 'menu_recipes.menu_price_id')
                     ->limit(1),
-                'availability' => MenuRecipe::selectRaw('CASE WHEN FLOOR(MIN(COALESCE(inventories.qty / menu_recipes.qty, 0))) > 0 THEN true ELSE false END')
+                'availability' => MenuRecipe::selectRaw('CASE WHEN CAST(MIN(COALESCE(inventories.qty / menu_recipes.qty, 0)) AS INTEGER) > 0 THEN 1 ELSE 0 END')
                     ->join('inventory_histories', 'menu_recipes.inventory_history_id', '=', 'inventory_histories.id')
                     ->join('inventories', 'inventory_histories.inventory_id', '=', 'inventories.id')
                     ->whereColumn('menu_prices.id', 'menu_recipes.menu_price_id')
@@ -130,14 +130,14 @@ class MenuPriceRepository extends BaseRepository
             ->with(['menu'])
             ->where('status', 'active')
             ->addSelect([
-                'stock_remaining' => MenuRecipe::selectRaw('FLOOR(MIN(COALESCE(inventories.qty / menu_recipes.qty, 0)))')
+                'stock_remaining' => MenuRecipe::selectRaw('CAST(MIN(COALESCE(inventories.qty / menu_recipes.qty, 0)) AS INTEGER)')
                     ->join('inventory_histories', 'menu_recipes.inventory_history_id', '=', 'inventory_histories.id')
                     ->joinSub($inventoriesSubQuery, 'inventories', function ($join) {
                         $join->on('inventory_histories.inventory_id', '=', 'inventories.id');
                     })
                     ->whereColumn('menu_prices.id', 'menu_recipes.menu_price_id')
                     ->limit(1),
-                'availability' => MenuRecipe::selectRaw('CASE WHEN FLOOR(MIN(COALESCE(inventories.qty / menu_recipes.qty, 0))) > 0 THEN true ELSE false END')
+                'availability' => MenuRecipe::selectRaw('CASE WHEN CAST(MIN(COALESCE(inventories.qty / menu_recipes.qty, 0)) AS INTEGER) > 0 THEN 1 ELSE 0 END')
                     ->join('inventory_histories', 'menu_recipes.inventory_history_id', '=', 'inventory_histories.id')
                     ->joinSub($inventoriesSubQuery, 'inventories', function ($join) {
                         $join->on('inventory_histories.inventory_id', '=', 'inventories.id');

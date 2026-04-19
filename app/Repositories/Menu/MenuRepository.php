@@ -26,21 +26,21 @@ class MenuRepository extends BaseRepository
             $q->whereHas('prices', fn ($q) => $q->whereIn('uuid', request('uuids')));
             $q->with('price', function ($q) {
                 $q->selectRaw('*, (
-                    SELECT FLOOR(MIN(COALESCE(inventories.qty / menu_recipes.qty, 0)))
+                    SELECT CAST(MIN(COALESCE(inventories.qty / menu_recipes.qty, 0)) AS INTEGER)
                     FROM menu_recipes
                     JOIN inventory_histories ON menu_recipes.inventory_history_id = inventory_histories.id
                     JOIN inventories ON inventory_histories.inventory_id = inventories.id
                     WHERE menu_prices.id = menu_recipes.menu_price_id
                 ) as stock_remaining,
-                 CASE
+                CASE
                     WHEN (
-                        SELECT FLOOR(MIN(COALESCE(inventories.qty / menu_recipes.qty, 0)))
+                        SELECT CAST(MIN(COALESCE(inventories.qty / menu_recipes.qty, 0)) AS INTEGER)
                         FROM menu_recipes
                         JOIN inventory_histories ON menu_recipes.inventory_history_id = inventory_histories.id
                         JOIN inventories ON inventory_histories.inventory_id = inventories.id
                         WHERE menu_prices.id = menu_recipes.menu_price_id
-                    ) > 0 THEN true
-                    ELSE false
+                    ) > 0 THEN 1
+                    ELSE 0
                 END as availability');
             });
         });
