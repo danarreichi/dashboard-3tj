@@ -39,6 +39,24 @@ const Swal2 = Swal.mixin({
     }
 });
 
+function toggleQtyField(element) {
+    let stockType = $(element).val();
+    let qtyField = $(element).closest('form').find('input[name="qty"]');
+    let qtyWrapper = $(element).closest('form').find('.qtyFieldWrapper');
+    hideField(qtyWrapper, qtyField, stockType);
+}
+
+function hideField(qtyWrapperElement, qtyFieldElement, stockType) {
+    if (stockType === 'fixed') {
+        qtyWrapperElement.hide();
+        qtyFieldElement.removeAttr('required');
+        qtyFieldElement.val('');
+    } else {
+        qtyWrapperElement.show();
+        qtyFieldElement.attr('required', 'required');
+    }
+}
+
 function getProfile() {
     var headers = {
         'Authorization': 'Bearer ' + localStorage.getItem("bearer")
@@ -311,6 +329,7 @@ function getModalInventoryName(element) {
         success: function (response) {
             $('#uuidAdjust').val(response.data.uuid);
             $('#modalInventoryName').html(response.data.name);
+            if (response.data.stock_type == 'fixed') response.data.unit = '';
             $('#modalInventoryQty').html(`${response.data.qty} ${response.data.unit}`);
             $('#inventoryUnit').html(`${response.data.unit}`);
         },
@@ -334,6 +353,11 @@ function getInventory(element) {
             $('#uuidEdit').val(response.data.uuid);
             $('#nameEdit').val(response.data.name);
             $('#unitEdit').val(response.data.unit);
+            hideField(
+                $('#editInventoryForm').find('.qtyFieldWrapper'),
+                $('#editInventoryForm').find('input[name="qty"]'),
+                response.data.stock_type
+            );
             $('#qtyEdit').val(response.data.qty);
             $('#delete').attr('data-uuid', response.data.uuid);
             $('#secondaryEdit').modal('show');
