@@ -6,6 +6,8 @@ use App\Models\Mediafile;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Http\File;
+use Intervention\Image\ImageManager;
 
 class MediafileRepository extends BaseRepository
 {
@@ -39,10 +41,28 @@ class MediafileRepository extends BaseRepository
 
     public function createByModel(Model $model, $dir, \Illuminate\Http\File|\Illuminate\Http\UploadedFile $file, $sequence = 0, $note = NULL): Model
     {
+        $manager = ImageManager::gd();
+        // Create an image instance
+        $img = $manager->read($file->getRealPath());
+
+        // Check the width of the image
+        if ($img->width() > 300) $img->scaleDown(width: 300);
+
+        // Create a temporary file path to save the processed image
+        $tempFilePath = tempnam(sys_get_temp_dir(), 'compressed_image');
+        $img->save($tempFilePath, 75); // Save with 75% quality
+
+        // Use the processed image to store the file
+        $path = Storage::putFile($dir, new File($tempFilePath), 'public');
+
+        // Delete the temporary file
+        unlink($tempFilePath);
+
+        // Prepare attributes for the new model
         $attributes = [
             'model_type' => get_class($model),
             'model_id' => $model->getKey(),
-            'path' => Storage::putFile($dir, $file, 'public'),
+            'path' => $path,
             'sequence' => $sequence,
             'note' => $note,
         ];
@@ -52,8 +72,24 @@ class MediafileRepository extends BaseRepository
 
     public function replaceMedia(Mediafile $mediafile, $dir, \Illuminate\Http\File|\Illuminate\Http\UploadedFile $file, $sequence = 0, $note = NULL): Model
     {
+        $manager = ImageManager::gd();
+        // Create an image instance
+        $img = $manager->read($file->getRealPath());
+
+        // Check the width of the image
+        if ($img->width() > 300) $img->scaleDown(width: 300);
+
+        // Create a temporary file path to save the processed image
+        $tempFilePath = tempnam(sys_get_temp_dir(), 'compressed_image');
+        $img->save($tempFilePath, 75); // Save with 75% quality
+
+        // Use the processed image to store the file
+        $path = Storage::putFile($dir, new File($tempFilePath), 'public');
+
+        // Delete the temporary file
+        unlink($tempFilePath);
         $attributes = [
-            'path' => Storage::putFile($dir, $file, 'public'),
+            'path' => $path,
             'sequence' => $sequence,
             'note' => $note,
         ];
@@ -63,9 +99,26 @@ class MediafileRepository extends BaseRepository
 
     public function replaceMediaWithDelete(Mediafile $mediafile, $dir, \Illuminate\Http\File|\Illuminate\Http\UploadedFile $file, $sequence = 0, $note = NULL): Model
     {
+        $manager = ImageManager::gd();
+        // Create an image instance
+        $img = $manager->read($file->getRealPath());
+
+        // Check the width of the image
+        if ($img->width() > 300) $img->scaleDown(width: 300);
+
+        // Create a temporary file path to save the processed image
+        $tempFilePath = tempnam(sys_get_temp_dir(), 'compressed_image');
+        $img->save($tempFilePath, 75); // Save with 75% quality
+
+        // Use the processed image to store the file
+        $path = Storage::putFile($dir, new File($tempFilePath), 'public');
+
+        // Delete the temporary file
+        unlink($tempFilePath);
+
         Storage::delete($mediafile->getRawOriginal('path'));
         $attributes = [
-            'path' => Storage::putFile($dir, $file, 'public'),
+            'path' => $path,
             'sequence' => $sequence,
             'note' => $note,
         ];

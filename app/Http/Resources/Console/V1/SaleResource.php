@@ -20,8 +20,8 @@ class SaleResource extends JsonResource
         $price = ($this->qty * $this->getPropWhenLoaded('price', 'price'));
         return [
             'qty' => $this->qty,
-            'price_per_unit' => $this->getPropWhenLoaded('price', 'price'),
-            'sales_sum' => $price,
+            'price_per_unit' => "Rp" . number_format($this->getPropWhenLoaded('price', 'price'), 2, ",", "."),
+            'sales_sum' => "Rp" . number_format($price, 2, ",", "."),
             'updated_at' => $this->updated_at,
         ];
     }

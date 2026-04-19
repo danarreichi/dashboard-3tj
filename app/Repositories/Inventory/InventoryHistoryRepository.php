@@ -32,7 +32,7 @@ class InventoryHistoryRepository extends BaseRepository
 
     public function listDropdownByInventory(Inventory $inventory)
     {
-        $query = parent::index()->where('inventory_id', $inventory->id)->where('status', InventoryHistory::STATUS_IN)->orderByDesc('id');
+        $query = parent::index()->with('inventory')->where('inventory_id', $inventory->id)->where('status', InventoryHistory::STATUS_IN)->orderByDesc('id');
         return $query->limit(5)->get();
     }
 

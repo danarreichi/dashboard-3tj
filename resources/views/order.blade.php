@@ -105,7 +105,7 @@
                 <x-profile-dropdown></x-profile-dropdown>
             </div>
             <div class="page-content row flex-grow-1">
-                <div class="col-lg-9 col-md-12 d-flex flex-column">
+                <div class="col-lg-8 col-md-12 d-flex flex-column">
                     <div class="card mb-3">
                         <div class="card-header">
                             <h4 class="card-title">Kategori menu</h4>
@@ -131,7 +131,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-lg-3 col-md-12 mt-3 mt-sm-3 mt-md-3 m-xl-0">
+                <div class="col-lg-4 col-md-12 mt-3 mt-sm-3 mt-md-0 m-xl-0">
                     <div class="card h-100">
                         <div class="card-header">
                             <h4 class="card-title">Pesanan</h4>
@@ -224,6 +224,7 @@
                     </div>
                 </div>
             </div>
+            <x-order-receipt></x-order-receipt>
             <x-order-confirmation-modal></x-order-confirmation-modal>
         </div>
     </div>

@@ -3,12 +3,29 @@ const apiPort = window.location.port;
 const host = `http://${apiHost}:${apiPort}/api/console/v1/`;
 const pageHost = `http://${apiHost}:${apiPort}/`;
 var menuPricesTable;
+let startBetween = null;
 
 $(document).ready(function () {
     getProfile();
-    if (getQueryParamValue('filter[trashed]')) $('#filterTrashed').val(getQueryParamValue('filter[trashed]'));
-    getMenuCategoryDropdown('menuCategoryId');
-    getMenuCategoryDropdown('menuCategoryIdEdit');
+    if (getQueryParamValue('filter[trashed]')) $('#filterTrashed').val(getQueryParamValue(
+        'filter[trashed]'));
+});
+
+function getTodayDate() {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+    const day = String(today.getDate()).padStart(2, '0');
+
+    return `${year}-${month}-${day},${year}-${month}-${day}`;
+}
+
+var flatPickr = flatpickr('.flatpickr-range', {
+    altInput: true,
+    altFormat: "F j, Y",
+    dateFormat: "Y-m-d",
+    mode: 'range',
+    locale: 'id'
 });
 
 var Toast = Swal.mixin({
@@ -23,6 +40,15 @@ const Swal2 = Swal.mixin({
         input: 'form-control'
     }
 });
+
+function getDatepickr(element) {
+    let selectedDates = element._flatpickr.selectedDates;
+    if (selectedDates.length === 2) {
+        startBetween =
+            `${selectedDates[0].toLocaleDateString('sv-SE')},${selectedDates[1].toLocaleDateString('sv-SE')}`;
+        customized_datatable.ajax.reload();
+    }
+}
 
 function getProfile() {
     var headers = {
@@ -41,7 +67,8 @@ function getProfile() {
         },
         error: function (xhr, status, error) {
             console.error(JSON.parse(xhr.responseText).message);
-            window.location.href = pageHost + 'login?from-path=' + encodeURIComponent(window.location.pathname);
+            window.location.href = pageHost + 'login?from-path=' + encodeURIComponent(window.location
+                .pathname);
         }
     });
 }
@@ -89,7 +116,9 @@ function getInventoryDropdown(excludes) {
             );
 
             response.data.forEach(function (item, index) {
-                selectElement.append(`<option value="${item.uuid}" data-name="${item.name}" data-unit="${item.unit}">${item.name}</option>`);
+                selectElement.append(
+                    `<option value="${item.uuid}" data-name="${item.name}" data-unit="${item.unit}">${item.name}</option>`
+                );
             });
         },
         error: function (xhr, status, error) {
@@ -127,7 +156,8 @@ function addMenu(element) {
                 $.each(xhr.responseJSON.errors, function (fieldName, errorMessage) {
                     var inputField = $('[name="' + fieldName + '"]');
                     inputField.addClass('is-invalid');
-                    inputField.after('<div class="invalid-feedback">' + errorMessage + '</div>');
+                    inputField.after('<div class="invalid-feedback">' + errorMessage +
+                        '</div>');
                 });
             }
             console.error(JSON.parse(xhr.responseText).message);
@@ -144,51 +174,49 @@ $('#filterTrashed').on('change', function () {
 });
 
 let customized_datatable = $('#menuTable').DataTable({
-    columns: [
-        {
-            data: null,
-            render: function (data, type, row, meta) {
-                return meta.row + meta.settings._iDisplayStart + 1;
-            }
-        },
-        {
-            data: null,
-            render: function (data, type, row) {
-                return `<img src="${pageHost}${row.image}" class="me-2" style="width: 100px; height: 100px; object-fit: cover;"></img>` + row.name;
-            }
-        },
-        {
-            data: 'category'
-        },
-        {
-            data: null,
-            render: function (data, type, row) {
-                return row.price_display;
-            }
-        },
-        {
-            data: null,
-            render: function (data, type, row) {
-                return dateIndFormat(row.updated_at);
-            }
-        },
-        {
-            data: null,
-            width: "28%",
-            render: function (data, type, row) {
-                let editButton = '<button onclick="getMenu(this)" data-uuid="' + row.uuid + '" class="btn btn-secondary d-flex justify-content-center align-items-center"> <span class="me-2"><i class="bi bi-pencil-square"></i></i></span>Ubah</button>';
-                let pricesButton = '<button onclick="getPrices(this)" data-uuid="' + row.uuid + '" class="btn btn-success d-flex justify-content-center align-items-center"> <span class="me-2"><i class="bi bi-cash-coin"></i></i></i></span>Daftar Harga & Bahan</button>';
-                let unBanButton = '<button onclick="restoreMenu(this)" data-uuid="' + row.uuid + '" class="btn btn-danger d-flex justify-content-center align-items-center"> <span class="me-2"><i class="bi bi-unlock"></i></i></span>Restore</button>';
-                let grouped = '<div class="d-flex gap-2">' +
-                    ((metaValue.logined_role === 'admin') ?
-                        ((row.status === 'active') ? editButton + pricesButton : unBanButton) : '') +
-                    '</div>';
-                return grouped;
-            }
+    columns: [{
+        data: null,
+        render: function (data, type, row, meta) {
+            return meta.row + meta.settings._iDisplayStart + 1;
         }
+    },
+    {
+        data: null,
+        render: function (data, type, row) {
+            return `<img src="${pageHost}${row.image}" class="me-2" style="width: 100px; height: 100px; object-fit: cover;"></img>` +
+                row.name;
+        }
+    },
+    {
+        data: 'category'
+    },
+    {
+        data: null,
+        render: function (data, type, row) {
+            return row.sales_count + " terjual";
+        }
+    },
+    {
+        data: null,
+        render: function (data, type, row) {
+            return row.sales_sum;
+        }
+    },
+    {
+        data: null,
+        width: "28%",
+        render: function (data, type, row) {
+            let saleHistoryButton = `<button onclick="getSale(this)" data-uuid="${row.uuid}" class="btn btn-success d-flex justify-content-center align-items-center">
+                            <span class="me-2">
+                                <i class="bi bi-clock-history"></i></i>
+                            </span>Penjualan
+                            </button>`;
+            return saleHistoryButton;
+        }
+    }
     ],
     ajax: {
-        url: host + 'menu',
+        url: host + 'sale',
         headers: {
             'Authorization': 'Bearer ' + localStorage.getItem("bearer")
         },
@@ -196,8 +224,9 @@ let customized_datatable = $('#menuTable').DataTable({
             return {
                 q: d.search.value,
                 filter: {
-                    trashed: trashedFilter
+                    trashed: trashedFilter,
                 },
+                start_between: startBetween || getTodayDate(),
                 page: (d.start / d.length) + 1,
                 limit: d.length,
             };
@@ -207,6 +236,21 @@ let customized_datatable = $('#menuTable').DataTable({
 
             json.recordsTotal = json.meta.total;
             json.recordsFiltered = json.meta.total;
+
+            if (json.meta.start_date && json.meta.end_date) {
+                let minDate = json.meta.start_date.split(' ')[0]; // Get "YYYY-MM-DD" part
+                let maxDate = json.meta.end_date.split(' ')[0]; // Get "YYYY-MM-DD" part
+
+                // Update Flatpickr minDate and maxDate dynamically
+                flatPickr.set('minDate', minDate);
+                flatPickr.set('maxDate', maxDate);
+            }
+
+            if (json.meta.earnings && json.meta.earningsAfterDiscount && json.meta.usedDiscounts) {
+                $('#earnings').html(json.meta.earnings);
+                $('#usedDiscounts').html(json.meta.usedDiscounts);
+                $('#earningsAfterDiscount').html(json.meta.earningsAfterDiscount);
+            }
 
             metaValue = json.meta;
             json.data = json.data;
@@ -229,127 +273,87 @@ let customized_datatable = $('#menuTable').DataTable({
     language: dataTablesIdLang
 });
 
-function getMenu(element) {
-    var queryParams = {};
-    var headers = {
-        'Authorization': 'Bearer ' + localStorage.getItem("bearer")
-    };
-    $.ajax({
-        url: host + 'menu/' + element.dataset.uuid,
-        type: 'GET',
-        data: queryParams,
-        headers: headers,
-        success: function (response) {
-            $('#uuidEdit').val(response.data.uuid);
-            $('#nameEdit').val(response.data.name);
-            $('#menuCategoryIdEdit').val(response.data.category_uuid);
-            $('#delete').attr('data-uuid', response.data.uuid);
-            $('#secondaryEdit').modal('show');
-        },
-        error: function (xhr, status, error) {
-            console.error(JSON.parse(xhr.responseText).message);
-        }
-    });
-}
-
-function getPrices(element) {
-    if ($.fn.DataTable.isDataTable('#menuPricesTable')) {
-        $('#menuPricesTable').DataTable().clear().destroy();
+function getSale(element) {
+    if ($.fn.DataTable.isDataTable('#saleHistoryTable')) {
+        $('#saleHistoryTable').DataTable().clear().destroy();
     }
     var queryParams = {};
     var headers = {
         'Authorization': 'Bearer ' + localStorage.getItem("bearer")
     };
-    $.ajax({
-        url: host + 'menu/' + element.dataset.uuid + '/price',
-        type: 'GET',
-        data: queryParams,
-        headers: headers,
-        success: function (response) {
-            document.getElementById('tempRecipeForm').setAttribute('data-uuid', element.dataset.uuid);
-            $('#modalMenuName').html(response.meta.menu_name);
-            menuPricesTable = $('#menuPricesTable').DataTable({
-                columns: [
-                    {
-                        data: null,
-                        render: function (data, type, row, meta) {
-                            return meta.row + meta.settings._iDisplayStart + 1;
-                        }
+    menuPricesTable = $('#saleHistoryTable').DataTable({
+        columns: [
+            {
+                data: null,
+                render: function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
+                data: null,
+                render: function (data, type, row) {
+                    return row.qty + " terjual";
+                }
+            },
+            {
+                data: 'price_per_unit'
+            },
+            {
+                data: 'sales_sum'
+            },
+            {
+                data: null,
+                render: function (data, type, row) {
+                    return dateIndWithTimeFormat(row.updated_at);
+                }
+            }
+        ],
+        ajax: {
+            url: host + 'menu/' + element.dataset.uuid + '/sale',
+            headers: {
+                'Authorization': 'Bearer ' + localStorage.getItem("bearer")
+            },
+            data: function (d) {
+                let filter = {};
+                return {
+                    q: d.search.value,
+                    filter: {
+                        start_between: startBetween || getTodayDate(),
                     },
-                    {
-                        data: null,
-                        width: "95%",
-                        render: function (data, type, row, meta) {
-                            let recipes = row.recipes.map(recipe => {
-                                return `<button type="button" class="list-group-item list-group-item-action d-flex justify-content-between"><span>${recipe.name}</span><span class="fw-semibold">${recipe.qty}${recipe.unit} @${recipe.per_serving_price}</span></button>`;
-                            }).join('');
-                            let setActiveBtn = (row.status !== 'active') ? `<button class="btn btn-success w-100 mb-2 btn-sm" data-menu-uuid="${metaValue.menu_uuid}" data-uuid="${row.uuid}" onclick="activatePrice(this)">Aktifkan harga</button>` : '';
-                            let badge = (row.status === 'active') ? 'success' : 'danger';
-                            return `<div class="accordion-item">
-								<h2 class="accordion-header" id="headingOne${meta.row + meta.settings._iDisplayStart + 1}">
-									<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse${meta.row + meta.settings._iDisplayStart + 1}" aria-expanded="false">
-									<span class="me-2 fw-bold">${row.price}</span><span class="badge bg-light-${badge}">${row.status}</span>
-									</button>
-								</h2>
-								<div id="collapse${meta.row + meta.settings._iDisplayStart + 1}" class="accordion-collapse collapse" style="">
-									<div class="accordion-body">
-                                        ${setActiveBtn}
-                                        <div class="list-group">
-                                            ${recipes}
-                                        <hr>
-                                        <button type="button" class="list-group-item list-group-item-action d-flex justify-content-end"><span class="fw-semibold">HPP: ${row.total_per_serving_price}</span></button>
-                                        </div>
-									</div>
-								</div>
-							</div>`;
-                        }
-                    },
-                ],
-                ajax: {
-                    url: host + 'menu/' + element.dataset.uuid + '/price',
-                    headers: {
-                        'Authorization': 'Bearer ' + localStorage.getItem("bearer")
-                    },
-                    data: function (d) {
-                        let filter = {};
-                        return {
-                            q: d.search.value,
-                            filter: filter,
-                            page: (d.start / d.length) + 1,
-                            limit: d.length,
-                        };
-                    },
-                    dataFilter: function (callBack) {
-                        var json = jQuery.parseJSON(callBack);
+                    page: (d.start / d.length) + 1,
+                    limit: d.length,
+                };
+            },
+            dataFilter: function (callBack) {
+                var json = jQuery.parseJSON(callBack);
 
-                        json.recordsTotal = json.meta.total;
-                        json.recordsFiltered = json.meta.total;
+                json.recordsTotal = json.meta.total;
+                json.recordsFiltered = json.meta.total;
 
-                        $('#successPrices').modal('show');
-                        metaValue = json.meta;
-                        json.data = json.data;
-                        return JSON.stringify(json);
-                    },
-                    error: function (xhr, errorType, exception) {
-                        console.error('Error fetching data:', exception);
-                    },
-                    cache: true,
-                },
-                paging: true,
-                pageLength: 5, // Default number of rows per page
-                lengthMenu: [5, 10, 25, 50, 100], // Options for rows per page
-                responsive: true,
-                autoWidth: false,
-                lengthChange: true,
-                ordering: false,
-                processing: true,
-                serverSide: true,
-                language: dataTablesIdLang
-            });
+                $('#productName').html(json.meta.product_name);
+                $('#productSalesQty').html(`${json.meta.count_sale} terjual`);
+                $('#productSales').html(json.meta.total_sale);
+                $('#infoHistory').modal('show');
+                metaValue = json.meta;
+                json.data = json.data;
+                return JSON.stringify(json);
+            },
+            error: function (xhr, errorType, exception) {
+                console.error('Error fetching data:', exception);
+            },
+            cache: true,
         },
-        error: function (xhr, status, error) {
-            console.error(JSON.parse(xhr.responseText).message);
-        }
+        paging: true,
+        pageLength: 5, // Default number of rows per page
+        lengthMenu: [5, 10, 25, 50, 100], // Options for rows per page
+        responsive: true,
+        autoWidth: false,
+        lengthChange: true,
+        ordering: false,
+        processing: true,
+        searching: false,
+        serverSide: true,
+        language: dataTablesIdLang
     });
 }
 
@@ -370,7 +374,9 @@ function getInventoryHistoryDropdown(inventoryUuid) {
                 '<option value="" style="display: none;" disabled selected>Pilih harga restock terbaru</option>'
             );
             response.data.forEach(function (item, index) {
-                selectElement.append(`<option value="${item.uuid}" data-price-per-unit="${item.price_per_unit}">${item.price} @${item.qty}</option>`);
+                selectElement.append(
+                    `<option value="${item.uuid}" data-price-per-unit="${item.price_per_unit}">${item.price}</option>`
+                );
             });
         },
         error: function (xhr, status, error) {
@@ -395,7 +401,8 @@ function calculateHpp() {
     }
     $('[name="inventory_history[]"]').each(function () {
         var selectedOption = $(this).find('option:selected');
-        var pricePerUnit = selectedOption.data('price-per-unit') ? selectedOption.data('price-per-unit') : 0;
+        var pricePerUnit = selectedOption.data('price-per-unit') ? selectedOption.data('price-per-unit') :
+            0;
 
         // Find the nearest <tr> element
         var row = $(this).closest('tr');
@@ -449,7 +456,8 @@ function addRecipeTemp(element) {
     clearForm(element.id);
     $('#unitPlaceholder').html('');
     $('#addMenuPriceTable tbody').append(newRow);
-    let excludedInventories = $('#tempRecipeForm').serializeArray('inventory_uuid').filter(item => item.name === 'inventory_uuid[]').map(item => item.value);
+    let excludedInventories = $('#tempRecipeForm').serializeArray('inventory_uuid').filter(item => item.name ===
+        'inventory_uuid[]').map(item => item.value);
     getInventoryDropdown(`excludes=${excludedInventories}`);
     $('#saveMenuPriceButton').show();
 }
@@ -472,7 +480,11 @@ function saveMenuPriceForm(element) {
         $('[data-group="' + groupName + '"]').each(function () {
             let fieldName = $(this).attr('name');
             let value = $(this).val();
-            groupedAttributes[index].push({ name: fieldName, value: value, group: groupName });
+            groupedAttributes[index].push({
+                name: fieldName,
+                value: value,
+                group: groupName
+            });
         });
     });
 
@@ -498,7 +510,9 @@ function saveMenuPriceForm(element) {
         }
     });
 
-    let dataObject = { recipes: recipes };
+    let dataObject = {
+        recipes: recipes
+    };
     if (price) dataObject.price = price;
 
     var headers = {
@@ -526,7 +540,8 @@ function saveMenuPriceForm(element) {
                     if (fieldName === "price") {
                         var inputField = $('[name="' + fieldName + '"]');
                         inputField.addClass('is-invalid');
-                        inputField.after('<div class="invalid-feedback">' + errorMessage + '</div>');
+                        inputField.after('<div class="invalid-feedback">' + errorMessage +
+                            '</div>');
                     }
                     if (fieldName.includes("recipes") && fieldName.includes("uuid")) {
                         let iteration = parseInt(fieldName.split(".")[1]);
@@ -535,7 +550,9 @@ function saveMenuPriceForm(element) {
                             if (index === iteration) {
                                 let inputField = $(element);
                                 inputField.addClass('is-invalid');
-                                inputField.after('<div class="invalid-feedback">Pilihan tidak boleh kosong</div>');
+                                inputField.after(
+                                    '<div class="invalid-feedback">Pilihan tidak boleh kosong</div>'
+                                );
                             }
                         });
                     }
@@ -556,7 +573,8 @@ function removeRow(element) {
     $(element).closest('tr').remove();
     updateRowNumbers();
     calculateHpp();
-    let excludedInventories = $('#tempRecipeForm').serializeArray('inventory_uuid').filter(item => item.name === 'inventory_uuid[]').map(item => item.value);
+    let excludedInventories = $('#tempRecipeForm').serializeArray('inventory_uuid').filter(item => item.name ===
+        'inventory_uuid[]').map(item => item.value);
     getInventoryDropdown(`excludes=${excludedInventories}`);
 }
 
@@ -594,7 +612,8 @@ function editMenu(element) {
                 $.each(xhr.responseJSON.errors, function (fieldName, errorMessage) {
                     var inputField = $('[name="' + fieldName + '"]');
                     inputField.addClass('is-invalid');
-                    inputField.after('<div class="invalid-feedback">' + errorMessage + '</div>');
+                    inputField.after('<div class="invalid-feedback">' + errorMessage +
+                        '</div>');
                 });
             }
             console.error(JSON.parse(xhr.responseText).message);
@@ -697,7 +716,8 @@ function activatePrice(element) {
                 'Authorization': 'Bearer ' + localStorage.getItem("bearer")
             };
             $.ajax({
-                url: host + 'menu/' + element.dataset.menuUuid + '/price/' + element.dataset.uuid + '/activate',
+                url: host + 'menu/' + element.dataset.menuUuid + '/price/' + element.dataset.uuid +
+                    '/activate',
                 type: 'GET',
                 headers: headers,
                 success: function (response) {

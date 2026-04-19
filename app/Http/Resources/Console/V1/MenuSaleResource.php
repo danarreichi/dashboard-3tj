@@ -19,13 +19,14 @@ class MenuSaleResource extends JsonResource
     {
         $sales = $this->whenLoaded('sales');
         $sumSales = (count($sales) > 0) ? $sales->sum(fn ($sale) => $sale->qty * $sale->price->price) : 0;
+        $countSales = (count($sales) > 0) ? $sales->sum(fn ($sale) => $sale->qty) : 0;
         return [
             'uuid' => $this->uuid,
             'name' => $this->name,
             'category' => $this->getPropWhenLoaded('category', 'name'),
             'image' => $this->getPropWhenLoaded('image', 'path'),
-            'sales_sum' => $sumSales,
-            'sales_count' => $this->whenCountLoaded('sales'),
+            'sales_sum' => "Rp" . number_format($sumSales, 2, ",", "."),
+            'sales_count' => $countSales,
             'updated_at' => $this->updated_at,
             'status' => $this->deleted_at ? 'inactive' : 'active',
         ];

@@ -23,7 +23,7 @@ class Sale extends BaseModel
     public function scopeStartBetween(Builder $query, $startDate, $endDate)
     {
         return $query
-            ->whereDate('created_at', '>=', $startDate)
-            ->whereDate('created_at', '<=', $endDate);
+            ->whereDate('sales.created_at', '>=', $startDate)
+            ->whereDate('sales.created_at', '<=', $endDate);
     }
 }
