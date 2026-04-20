@@ -24,6 +24,7 @@ class ActiveMenuPriceResource extends JsonResource
             'status' => $this->status,
             'stock_remaining' => $this->stock_remaining,
             'availability' => ($this->availability) ? true : false,
+            'is_all_fixed' => ($this->is_all_fixed) ? true : false,
             'updated_at' => $this->updated_at,
             'name' => $this->getPropWhenLoaded('menu', 'name'),
             'image' => $this->getPropWhenLoaded('menu.image', 'path'),

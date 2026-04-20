@@ -74,10 +74,15 @@ class MenuPriceRepository extends BaseRepository
                     ->whereNot('inventories.stock_type', Inventory::FIXED)
                     ->whereColumn('menu_prices.id', 'menu_recipes.menu_price_id')
                     ->limit(1),
-                'availability' => MenuRecipe::selectRaw('CASE WHEN CAST(MIN(COALESCE(inventories.qty / menu_recipes.qty, 0)) AS INTEGER) > 0 THEN 1 ELSE 0 END')
+                'availability' => MenuRecipe::selectRaw('CASE WHEN MIN(COALESCE(inventories.qty / menu_recipes.qty, 0)) IS NULL OR CAST(MIN(COALESCE(inventories.qty / menu_recipes.qty, 0)) AS INTEGER) > 0 THEN 1 ELSE 0 END')
                     ->join('inventory_histories', 'menu_recipes.inventory_history_id', '=', 'inventory_histories.id')
                     ->join('inventories', 'inventory_histories.inventory_id', '=', 'inventories.id')
                     ->whereNot('inventories.stock_type', Inventory::FIXED)
+                    ->whereColumn('menu_prices.id', 'menu_recipes.menu_price_id')
+                    ->limit(1),
+                'is_all_fixed' => MenuRecipe::selectRaw('CASE WHEN COUNT(menu_recipes.id) > 0 AND SUM(CASE WHEN inventories.stock_type != ? THEN 1 ELSE 0 END) = 0 THEN 1 ELSE 0 END', [Inventory::FIXED])
+                    ->join('inventory_histories', 'menu_recipes.inventory_history_id', '=', 'inventory_histories.id')
+                    ->join('inventories', 'inventory_histories.inventory_id', '=', 'inventories.id')
                     ->whereColumn('menu_prices.id', 'menu_recipes.menu_price_id')
                     ->limit(1)
             ])
@@ -139,11 +144,16 @@ class MenuPriceRepository extends BaseRepository
                     })
                     ->whereColumn('menu_prices.id', 'menu_recipes.menu_price_id')
                     ->limit(1),
-                'availability' => MenuRecipe::selectRaw('CASE WHEN CAST(MIN(COALESCE(inventories.qty / menu_recipes.qty, 0)) AS INTEGER) > 0 THEN 1 ELSE 0 END')
+                'availability' => MenuRecipe::selectRaw('CASE WHEN MIN(COALESCE(inventories.qty / menu_recipes.qty, 0)) IS NULL OR CAST(MIN(COALESCE(inventories.qty / menu_recipes.qty, 0)) AS INTEGER) > 0 THEN 1 ELSE 0 END')
                     ->join('inventory_histories', 'menu_recipes.inventory_history_id', '=', 'inventory_histories.id')
                     ->joinSub($inventoriesSubQuery, 'inventories', function ($join) {
                         $join->on('inventory_histories.inventory_id', '=', 'inventories.id');
                     })
+                    ->whereColumn('menu_prices.id', 'menu_recipes.menu_price_id')
+                    ->limit(1),
+                'is_all_fixed' => MenuRecipe::selectRaw('CASE WHEN COUNT(menu_recipes.id) > 0 AND SUM(CASE WHEN inventories.stock_type != ? THEN 1 ELSE 0 END) = 0 THEN 1 ELSE 0 END', [Inventory::FIXED])
+                    ->join('inventory_histories', 'menu_recipes.inventory_history_id', '=', 'inventory_histories.id')
+                    ->join('inventories', 'inventory_histories.inventory_id', '=', 'inventories.id')
                     ->whereColumn('menu_prices.id', 'menu_recipes.menu_price_id')
                     ->limit(1)
             ])
