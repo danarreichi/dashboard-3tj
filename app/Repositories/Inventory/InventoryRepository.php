@@ -7,8 +7,6 @@ use App\Models\InventoryHistory;
 use App\Models\SaleGroup;
 use App\Repositories\BaseRepository;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Spatie\QueryBuilder\AllowedFilter;
 
 class InventoryRepository extends BaseRepository
@@ -25,10 +23,11 @@ class InventoryRepository extends BaseRepository
         $query = parent::index($filters, $sorts);
         if (request('q')) {
             $query->where(function ($q) {
-                $q->where('name', 'LIKE', '%' . request('q') . '%');
-                $q->orWhere('unit', 'LIKE', '%' . request('q') . '%');
+                $q->where('name', 'LIKE', '%'.request('q').'%');
+                $q->orWhere('unit', 'LIKE', '%'.request('q').'%');
             });
         }
+
         return $query->paginate(request('limit', 15))->withQueryString();
     }
 
@@ -38,30 +37,37 @@ class InventoryRepository extends BaseRepository
         if (request('excludes')) {
             $data->whereNotIn('uuid', explode(',', request('excludes')));
         }
+
         return $data->get();
     }
 
     public function adjustQty(Inventory $inventory, array $attributes)
     {
         $query = self::update($inventory, [
-            'qty' => ($attributes['status'] === 'out') ? $inventory->qty - $attributes['qty'] : $inventory->qty + $attributes['qty']
+            'qty' => ($attributes['status'] === 'out') ? $inventory->qty - $attributes['qty'] : $inventory->qty + $attributes['qty'],
         ]);
+
         return $query;
     }
 
     public function reduceInventoryStock(SaleGroup $saleGroup)
     {
-        $saleGroup->sales->each(function($sale){
+        $saleGroup->sales->each(function ($sale) {
             $qty = $sale->qty;
             $sale->price->menu;
-            $sale->price->recipes->each(function($recipe) use ($qty) {
+            $sale->price->recipes->each(function ($recipe) use ($qty) {
                 $qtyNeeded = $recipe->qty * $qty;
                 $inventoryQtyBefore = $recipe->history->inventory->qty;
+                $inventoryBuyQty = $recipe->history->qty;
+                if ($recipe->history->inventory->stock_type == Inventory::FIXED) {
+                    $inventoryQtyBefore = $qty;
+                    $inventoryBuyQty = 1;
+                }
                 $inventoryQtyAfter = $inventoryQtyBefore - $qtyNeeded;
                 $recipe->history->inventory->update([
-                    'qty' => $inventoryQtyAfter
+                    'qty' => $inventoryQtyAfter,
                 ]);
-                $price = ($recipe->history->price / $recipe->history->qty) * $qtyNeeded;
+                $price = ($recipe->history->price / $inventoryBuyQty) * $qtyNeeded;
                 InventoryHistory::create([
                     'inventory_id' => $recipe->history->inventory->id,
                     'user_id' => Auth::user()->id,
@@ -70,11 +76,12 @@ class InventoryRepository extends BaseRepository
                     'price' => $price,
                     'payload' => [
                         'old_qty' => $inventoryQtyBefore,
-                        'new_qty' => $inventoryQtyAfter
-                    ]
+                        'new_qty' => $inventoryQtyAfter,
+                    ],
                 ]);
             });
         });
+
         return $saleGroup;
     }
 }

@@ -2,13 +2,17 @@
 
 namespace App\Rules\Console\V1;
 
+use App\Models\Inventory;
 use App\Models\MenuPrice;
 use App\Models\MenuRecipe;
 use Illuminate\Contracts\Validation\Rule;
 
 class CheckoutQtyRules implements Rule
 {
-    private $attributes, $errorMessage;
+    private $attributes;
+
+    private $errorMessage;
+
     /**
      * Create a new rule instance.
      *
@@ -39,13 +43,15 @@ class CheckoutQtyRules implements Rule
                 'stock_remaining' => MenuRecipe::selectRaw('CAST(MIN(COALESCE(inventories.qty / menu_recipes.qty, 0)) AS INTEGER)')
                     ->join('inventory_histories', 'menu_recipes.inventory_history_id', '=', 'inventory_histories.id')
                     ->join('inventories', 'inventory_histories.inventory_id', '=', 'inventories.id')
+                    ->whereNot('inventories.stock_type', Inventory::FIXED)
                     ->whereColumn('menu_prices.id', 'menu_recipes.menu_price_id')
                     ->limit(1),
                 'availability' => MenuRecipe::selectRaw('CASE WHEN CAST(MIN(COALESCE(inventories.qty / menu_recipes.qty, 0)) AS INTEGER) > 0 THEN 1 ELSE 0 END')
                     ->join('inventory_histories', 'menu_recipes.inventory_history_id', '=', 'inventory_histories.id')
                     ->join('inventories', 'inventory_histories.inventory_id', '=', 'inventories.id')
+                    ->whereNot('inventories.stock_type', Inventory::FIXED)
                     ->whereColumn('menu_prices.id', 'menu_recipes.menu_price_id')
-                    ->limit(1)
+                    ->limit(1),
             ])
             ->get();
 
@@ -55,11 +61,16 @@ class CheckoutQtyRules implements Rule
                 $qty = $matchingData['qty'];
                 $item->subtotal = $qty * $item->price;
                 $item->recipes = $item->recipes->map(function ($recipe) use ($qty) {
+                    if ($recipe->history->inventory->stock_type == Inventory::FIXED) {
+                        $recipe->history->inventory->qty = $qty;
+                    }
                     $qtyAsked = $recipe->qty * $qty;
                     $recipe->history->inventory->qty = $recipe->history->inventory->qty - $qtyAsked;
+
                     return $recipe;
                 });
             }
+
             return $item;
         });
 
@@ -70,12 +81,16 @@ class CheckoutQtyRules implements Rule
                 array_push($stockRemaining, $result);
             });
             $item->stock_remaining = min($stockRemaining);
-            if (min($stockRemaining) == 0) $item->availability = 0;
+            if (min($stockRemaining) == 0) {
+                $item->availability = 0;
+            }
+
             return $item;
         });
 
         if ($setNewMenuStock->firstWhere('uuid', $allValue['uuid'])->stock_remaining < 0) {
-            $this->errorMessage = "Stok menu tidak mencukupi";
+            $this->errorMessage = 'Stok menu tidak mencukupi';
+
             return false;
         }
 
