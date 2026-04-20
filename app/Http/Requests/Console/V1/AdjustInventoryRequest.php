@@ -29,7 +29,7 @@ class AdjustInventoryRequest extends FormRequest
         return [
             'status' => ['required', 'in:in'],
             'price' => ['required', 'numeric', 'min:1'],
-            'qty' => ['required', 'numeric', 'min:1', new AdjustInventoryQtyRules($this->inventory, $this)],
+            'qty' => [new AdjustInventoryQtyRules($this->inventory, $this)],
         ];
     }
 }

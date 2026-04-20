@@ -34,7 +34,7 @@
                                         <input type="hidden" name="status" id="status">
                                         <div class="input-group">
                                             <div class="row w-100">
-                                                <div class="col-5">
+                                                <div class="col-5 qtyFieldWrapper">
                                                     <label for="qty" class="form-label">Qty Restock</label>
                                                     <div class="input-group">
                                                         <input type="number" name="qty" min="1" class="form-control" placeholder="Masukkan qty restock" required>

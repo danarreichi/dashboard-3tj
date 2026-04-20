@@ -327,9 +327,19 @@ function getModalInventoryName(element) {
         data: queryParams,
         headers: headers,
         success: function (response) {
+            if (response.data.stock_type == 'fixed') {
+                response.data.unit = '';
+                $('#adjustStockForm').find('.qtyFieldWrapper').next().removeClass('col-5').addClass('col-10');
+            } else {
+                $('#adjustStockForm').find('.qtyFieldWrapper').next().removeClass('col-10').addClass('col-5');
+            }
+            hideField(
+                $('#adjustStockForm').find('.qtyFieldWrapper'),
+                $('#adjustStockForm').find('input[name="qty"]'),
+                response.data.stock_type
+            );
             $('#uuidAdjust').val(response.data.uuid);
             $('#modalInventoryName').html(response.data.name);
-            if (response.data.stock_type == 'fixed') response.data.unit = '';
             $('#modalInventoryQty').html(`${response.data.qty} ${response.data.unit}`);
             $('#inventoryUnit').html(`${response.data.unit}`);
         },
