@@ -241,7 +241,7 @@
     <!-- SweetAlert2 -->
     <script src="{{ asset('dist/assets/extensions/sweetalert2/sweetalert2.min.js') }}"></script>
     {{-- Page JS --}}
-    <script src="{{ asset('page-js-min/base.js') }}"></script>
+    <script src="{{ asset('page-js/base.js') }}"></script>
     <script src="{{ asset('page-js/order.js') }}"></script>
 </body>
 
