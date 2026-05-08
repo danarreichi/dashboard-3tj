@@ -18,22 +18,24 @@ class MenuPriceResource extends JsonResource
     public function toArray($request)
     {
         // Calculate the total per serving price
-        $totalPerServingPrice = $this->whenLoaded('recipes')->sum(function($recipe) {
-            return $recipe->getPropWhenLoaded('history', 'price') / $recipe->getPropWhenLoaded('history', 'qty') * $recipe->qty;
+        $totalPerServingPrice = $this->whenLoaded('recipes')->sum(function ($recipe) {
+            return $recipe->getPropWhenLoaded('history', 'price') / ($recipe->getPropWhenLoaded('history', 'qty') ?? 1) * $recipe->qty;
         });
 
         return [
             'uuid' => $this->uuid,
             'revision' => $this->revision,
-            'price' => "Rp" . number_format($this->price, 2, ",", "."),
-            'total_per_serving_price' => "Rp" . number_format($totalPerServingPrice, 2, ",", "."),
+            'price' => 'Rp'.number_format($this->price, 2, ',', '.'),
+            'total_per_serving_price' => 'Rp'.number_format($totalPerServingPrice, 2, ',', '.'),
             'status' => $this->status,
             'updated_at' => $this->updated_at,
             'recipes' => MenuRecipeResource::collection(
-                $this->whenLoaded('recipes')->sortBy(function ($recipe) {
-                    return $recipe->getPropWhenLoaded('history.inventory', 'name');
-                }
-            )),
+                $this->whenLoaded('recipes')->sortBy(
+                    function ($recipe) {
+                        return $recipe->getPropWhenLoaded('history.inventory', 'name');
+                    }
+                )
+            ),
         ];
     }
 }

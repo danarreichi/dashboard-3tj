@@ -21,7 +21,7 @@ class MenuRecipeResource extends JsonResource
             'name' => $this->getPropWhenLoaded('history.inventory', 'name'),
             'qty' => $this->qty,
             'unit' => $this->getPropWhenLoaded('history.inventory', 'unit'),
-            'per_serving_price' => "Rp" . number_format($this->getPropWhenLoaded('history', 'price') / $this->getPropWhenLoaded('history', 'qty') * $this->qty, 2, ",", "."),
+            'per_serving_price' => 'Rp'.number_format($this->getPropWhenLoaded('history', 'price') / ($this->getPropWhenLoaded('history', 'qty') ?? 1) * $this->qty, 2, ',', '.'),
         ];
     }
 }

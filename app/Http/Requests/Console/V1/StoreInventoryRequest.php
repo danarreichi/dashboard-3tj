@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Console\V1;
 
+use App\Rules\Console\V1\InventoryQtyRules;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
@@ -27,9 +28,10 @@ class StoreInventoryRequest extends FormRequest
     {
         return [
             'name' => ['required', Rule::unique('inventories', 'name')],
+            'stock_type' => ['required'],
             'price' => ['required', 'numeric', 'min:1'],
             'unit' => ['required'],
-            'qty' => ['required', 'numeric', 'min:1']
+            'qty' => [new InventoryQtyRules($this->stock_type)]
         ];
     }
 }

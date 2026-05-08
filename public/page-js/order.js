@@ -1,7 +1,7 @@
 const apiHost = window.location.hostname;
 const apiPort = window.location.port;
-const host = `http://${apiHost}:${apiPort}/api/console/v1/`;
-const pageHost = `http://${apiHost}:${apiPort}/`;
+const host = `https://${apiHost}:${apiPort}/api/console/v1/`;
+const pageHost = `https://${apiHost}:${apiPort}/`;
 
 var selectedMenu = [];
 var selectedCategory;
@@ -381,9 +381,9 @@ function getMenus(menuUuids) {
                     $('#chartList').append(accordion);
                 }
             });
-            $('.accordion').find('.accordion-item').each(function(){
+            $('.accordion').find('.accordion-item').each(function () {
                 let uuid = $(this).data('uuid');
-                if(!selectedMenu.includes(uuid)) $(this).remove();
+                if (!selectedMenu.includes(uuid)) $(this).remove();
             });
             refreshStock(selectedCategory);
             loadMenu = false;
@@ -509,12 +509,14 @@ function refreshStock(uuid, q) {
 
             $.each(response.data, function (index, item) {
                 let clicked = (selectedMenu.includes(item.uuid)) ? 'clicked' : '';
+                var stock_element = `${(item.availability !== true) ? `<p class="card-text">Habis</p>` : `<p class="card-text">Stok: ${item.stock_remaining}</p>`}`;
+                if (item.is_all_fixed == true) stock_element = `<p class="card-text">Stok: (Fixed)</p>`;
                 var card = `<div class="card bg-secondary m-0 text-white menu-card ${clicked}" title="${item.name}" style="cursor: pointer; ${(item.availability !== true) ? 'opacity: 0.5;' : ''}" data-uuid="${item.uuid}" ${(item.availability == true) ? `onclick="selectMenu(this)"` : ``}>
                                 <img src="${pageHost}${item.image}" class="card-img-top" style="width: 200px; height: 200px; object-fit: cover;">
                                 <div class="card-body">
                                     <h5 class="card-title" style="width:140px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.name}</h5>
                                     <p class="card-text">${item.price}</p>
-                                    ${(item.availability !== true) ? `<p class="card-text">Habis</p>` : `<p class="card-text">Stok: ${item.stock_remaining}</p>`}
+                                    ${stock_element}
                                 </div>
                             </div>`;
                 $('#menuPrices').append(card);
@@ -626,12 +628,14 @@ function getMenuPrices(uuid, q) {
             $('#menuPrices').empty();
             $.each(response.data, function (index, item) {
                 let clicked = (selectedMenu.includes(item.uuid)) ? 'clicked' : '';
+                var stock_element = `${(item.availability !== true) ? `<p class="card-text">Habis</p>` : `<p class="card-text">Stok: ${item.stock_remaining}</p>`}`;
+                if (item.is_all_fixed == true) stock_element = `<p class="card-text">Stok: (Fixed)</p>`;
                 var card = `<div class="card bg-secondary m-0 text-white menu-card ${clicked}" title="${item.name}" style="cursor: pointer; ${(item.availability !== true) ? 'opacity: 0.5;' : ''}" data-uuid="${item.uuid}" ${(item.availability == true) ? `onclick="selectMenu(this)"` : ``}>
                                 <img src="${pageHost}${item.image}" class="card-img-top" style="width: 200px; height: 200px; object-fit: cover;">
                                 <div class="card-body">
                                     <h5 class="card-title" style="width:140px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.name}</h5>
                                     <p class="card-text">${item.price}</p>
-                                    ${(item.availability !== true) ? `<p class="card-text">Habis</p>` : `<p class="card-text">Stok: ${item.stock_remaining}</p>`}
+                                    ${stock_element}
                                 </div>
                             </div>`;
                 $('#menuPrices').append(card);

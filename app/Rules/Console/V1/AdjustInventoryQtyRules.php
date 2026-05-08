@@ -29,6 +29,11 @@ class AdjustInventoryQtyRules implements Rule
      */
     public function passes($attribute, $value)
     {
+        if ($this->inventory->stock_type == Inventory::FIXED) return true;
+        if (!varlen($value) || $value == 0) {
+            $this->errorMessage = 'Qty wajib diisi, dan harus lebih dari 0';
+            return false;
+        }
         if (($this->inventory->qty) < $value && ($this->all->status === InventoryHistory::STATUS_OUT)) {
             $this->errorMessage = __('Qty anda melebihi stok yang tersedia, stok tersedia: ' . $this->inventory->qty);
             return false;

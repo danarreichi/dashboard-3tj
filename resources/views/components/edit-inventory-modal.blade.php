@@ -21,10 +21,12 @@
                     <div class="form-group">
                         <input id="unitEdit" name="unit" type="text" class="form-control" placeholder="Masukkan satuan yang diinginkan" required>
                     </div>
-                    <label for="qty" class="form-label">Stock</label>
-                    <div class="form-group">
-                        <input id="qtyEdit" name="qty" type="number" placeholder="Masukkan stok awal"
-                            class="form-control" required>
+                    <div class="qtyFieldWrapper">
+                        <label for="qty" class="form-label">Stock</label>
+                        <div class="form-group">
+                            <input id="qtyEdit" name="qty" type="number" placeholder="Masukkan stok awal"
+                                class="form-control" required>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
