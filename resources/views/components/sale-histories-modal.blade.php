@@ -14,11 +14,15 @@
                 <div class="row">
                     <div class="col-6">
                         <label for="modal_inventory_name" class="form-label mb-1">Nama produk: <span class="fw-semibold" id="productName"></span></label>
+                        <br>
+                        <label class="form-label mb-1">Total penjualan: <span class="fw-semibold" id="productSalesQty"></span></label>
                     </div>
                     <div class="col-6">
-                        <label class="form-label mb-1">Total penjualan: <span class="fw-semibold" id="productSalesQty"></span></label>
-                        <br>
                         <label class="form-label mb-1">Jumlah pendapatan: <span class="fw-semibold" id="productSales"></span></label>
+                        <br>
+                        <label class="form-label mb-1">Jumlah HPP: <span class="fw-semibold" id="productHpp"></span></label>
+                        <br>
+                        <label class="form-label mb-1">Jumlah pendapatan (Bersih): <span class="fw-semibold" id="productSalesClean"></span></label>
                     </div>
                 </div>
                 <hr>

@@ -41,7 +41,18 @@ class SaleRepository extends BaseRepository
             ->where('menu_prices.menu_id', $menu->id)
             ->sum(DB::raw('sales.qty * menu_prices.price'));
 
-        return [$query->paginate(request('limit', 15))->withQueryString(), $countSale, $totalSale];
+        $totalSaleClean = parent::index($filters, $sorts)
+            ->whereHas('price', function ($q) use ($menu) {
+                $q->where('menu_id', $menu->id);
+            })
+            ->withCalculation('price.inventoryHistories', 'SUM(inventory_histories.price / IFNULL(inventory_histories.qty, 1))', 'hpp');
+        
+        $hpp = (DB::query()
+            ->selectRaw('SUM(hpp * qty) as real_hpp')
+            ->fromSub($totalSaleClean->toBase(), 't')
+            ->first()->real_hpp);
+            
+        return [$query->paginate(request('limit', 15))->withQueryString(), $countSale, $totalSale, ($totalSale - $hpp), $hpp];
     }
 
     public function createCheckout(array $attributes)

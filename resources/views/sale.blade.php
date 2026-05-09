@@ -52,6 +52,11 @@
                                         <h5 class="m-0">Diskon Terpakai: <span id="usedDiscounts">Rp0,00</span></h5>
                                         <h5 class="m-0">Pendapatan Setelah Diskon: <span id="earningsAfterDiscount">Rp0,00</span></h5>
                                     </div>
+                                    <div class="p-3 m-0 card-body d-flex justify-content-around">
+                                        <h5 class="m-0">HPP: <span id="totalHpp">Rp0,00</span></h5>
+                                        <h5 class="m-0">Pendapatan Bersih: <span id="earningsClean">Rp0,00</span></h5>
+                                        <h5 class="m-0">Pendapatan Bersih Setelah Diskon: <span id="earningsCleanAfterDiscount">Rp0,00</span></h5>
+                                    </div>
                                 </div>
                             </div>
                             <div class="col-12">

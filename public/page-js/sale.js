@@ -244,8 +244,11 @@ let customized_datatable = $('#menuTable').DataTable({
 
             if (json.meta.earnings && json.meta.earningsAfterDiscount && json.meta.usedDiscounts) {
                 $('#earnings').html(json.meta.earnings);
+                $('#earningsClean').html(json.meta.earningsClean);
                 $('#usedDiscounts').html(json.meta.usedDiscounts);
                 $('#earningsAfterDiscount').html(json.meta.earningsAfterDiscount);
+                $('#earningsCleanAfterDiscount').html(json.meta.earningsCleanAfterDiscount);
+                $('#totalHpp').html(json.meta.totalHpp);
             }
 
             metaValue = json.meta;
@@ -332,6 +335,8 @@ function getSale(element) {
                 $('#productName').html(json.meta.product_name);
                 $('#productSalesQty').html(`${json.meta.count_sale} terjual`);
                 $('#productSales').html(json.meta.total_sale);
+                $('#productHpp').html(json.meta.hpp);
+                $('#productSalesClean').html(json.meta.total_sale_clean);
                 $('#infoHistory').modal('show');
                 metaValue = json.meta;
                 json.data = json.data;
