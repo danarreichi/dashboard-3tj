@@ -38,8 +38,11 @@ class SaleController extends Controller
                 'start_date' => $minDate,
                 'end_date' => $maxDate,
                 'earnings' => "Rp" . number_format($earnings->total_sum, 2, ",", "."),
+                'earningsClean' => "Rp" . number_format($earnings->total_sum_clean, 2, ",", "."),
                 'usedDiscounts' => "Rp" . number_format($earnings->discount_sum, 2, ",", "."),
-                'earningsAfterDiscount' => "Rp" . number_format($earnings->total_after_discount_sum, 2, ",", ".")
+                'earningsAfterDiscount' => "Rp" . number_format($earnings->total_after_discount_sum, 2, ",", "."),
+                'earningsCleanAfterDiscount' => "Rp" . number_format($earnings->total_after_discount_sum_clean, 2, ",", "."),
+                'totalHpp' => "Rp" . number_format($earnings->hpp, 2, ",", ".")
             ]
         ]);
     }
@@ -47,13 +50,15 @@ class SaleController extends Controller
     public function menuSale($menu)
     {
         $menu = Menu::withTrashed()->where('uuid', $menu)->firstOrFail();
-        [$data, $countSale, $totalSale] = $this->repository->listSalesByMenu($menu);
+        [$data, $countSale, $totalSale, $totalSaleClean, $hpp] = $this->repository->listSalesByMenu($menu);
 
         return SaleResource::collection($data)->additional([
             'meta' => [
                 'product_name' => $menu->name,
                 'count_sale' => $countSale,
-                'total_sale' => "Rp" . number_format($totalSale, 2, ",", ".")
+                'total_sale' => "Rp" . number_format($totalSale, 2, ",", "."),
+                'hpp' => "Rp" . number_format($hpp, 2, ",", "."),
+                'total_sale_clean' => "Rp" . number_format($totalSaleClean, 2, ",", "."),
             ]
         ]);
     }
