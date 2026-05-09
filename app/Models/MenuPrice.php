@@ -30,6 +30,11 @@ class MenuPrice extends BaseModel
         return $this->hasMany(MenuRecipe::class);
     }
 
+    public function inventoryHistories()
+    {
+        return $this->belongsToMany(InventoryHistory::class, 'menu_recipes');
+    }
+
     public function menu()
     {
         return $this->belongsTo(Menu::class);

@@ -25,7 +25,11 @@ class SaleRepository extends BaseRepository
         $query = parent::index($filters, $sorts)
             ->whereHas('price', function ($q) use ($menu) {
                 $q->where('menu_id', $menu->id);
-            })->with('price')->orderByDesc('created_at');
+            })
+            ->with(['price' => function ($q) {
+                $q->withCalculation('inventoryHistories', 'SUM(inventory_histories.price / IFNULL(inventory_histories.qty, 1))', 'hpp');
+            }])
+            ->orderByDesc('created_at');
 
         $countSale = parent::index($filters, $sorts)
             ->whereHas('price', function ($q) use ($menu) {

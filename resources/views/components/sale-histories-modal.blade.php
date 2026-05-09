@@ -29,7 +29,8 @@
                                 <th>No.</th>
                                 <th>Jumlah terjual</th>
                                 <th>Harga produk</th>
-                                <th>Pendapatan</th>
+                                <th>HPP</th>
+                                <th>Pendapatan (Bersih)</th>
                                 <th>Tanggal transaksi</th>
                             </tr>
                         </thead>

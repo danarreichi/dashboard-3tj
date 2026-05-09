@@ -17,9 +17,11 @@ class SaleResource extends JsonResource
      */
     public function toArray($request)
     {
-        $price = ($this->qty * $this->getPropWhenLoaded('price', 'price'));
+        $hpp = $this->qty * $this->getPropWhenLoaded('price', 'hpp'); 
+        $price = ($this->qty * $this->getPropWhenLoaded('price', 'price')) - $hpp;
         return [
             'qty' => $this->qty,
+            'hpp' => "Rp" . number_format($hpp, 2, ",", "."),
             'price_per_unit' => "Rp" . number_format($this->getPropWhenLoaded('price', 'price'), 2, ",", "."),
             'sales_sum' => "Rp" . number_format($price, 2, ",", "."),
             'updated_at' => $this->updated_at,

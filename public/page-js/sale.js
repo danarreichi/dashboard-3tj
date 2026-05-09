@@ -295,6 +295,9 @@ function getSale(element) {
                 data: 'price_per_unit'
             },
             {
+                data: 'hpp'
+            },
+            {
                 data: 'sales_sum'
             },
             {
