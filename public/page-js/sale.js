@@ -1,7 +1,3 @@
-const apiHost = window.location.hostname;
-const apiPort = window.location.port;
-const host = `https://${apiHost}:${apiPort}/api/console/v1/`;
-const pageHost = `https://${apiHost}:${apiPort}/`;
 var menuPricesTable;
 let startBetween = null;
 
