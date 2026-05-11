@@ -1,3 +1,9 @@
+const apiProtocol = window.location.protocol;
+const apiHost = window.location.hostname;
+const apiPort = window.location.port;
+const host = `${apiProtocol}//${apiHost}:${apiPort}/api/console/v1/`;
+const pageHost = `${apiProtocol}//${apiHost}:${apiPort}/`;
+
 // Base JS
 function dateIndFormat(dateTime) {
     var dateObject = new Date(dateTime);

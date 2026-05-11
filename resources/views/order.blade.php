@@ -67,8 +67,7 @@
         }
 
         .scrollable-accordion {
-            max-height: 200px;
-            /* Atur tinggi maksimum sesuai kebutuhan Anda */
+            max-height: 350px;
             overflow-y: scroll;
             -ms-overflow-style: none;
             scrollbar-width: none;
@@ -139,7 +138,7 @@
                         <div class="card-body d-flex flex-column w-100">
                             <div class="row-6">
                                 <form id="chart" class="d-flex justify-content-center align-items-center"
-                                    style="height: 200px;" onsubmit="checkout(this)">
+                                    style="height: 350px;" onsubmit="checkout(this)">
                                     <div class="accordion scrollable-accordion" id="chartList">
                                         <p class="fs-5 text-center">--Keranjang kosong--</p>
                                     </div>
@@ -241,7 +240,7 @@
     <!-- SweetAlert2 -->
     <script src="{{ asset('dist/assets/extensions/sweetalert2/sweetalert2.min.js') }}"></script>
     {{-- Page JS --}}
-    <script src="{{ asset('page-js-min/base.js') }}"></script>
+    <script src="{{ asset('page-js/base.js') }}"></script>
     <script src="{{ asset('page-js/order.js') }}"></script>
 </body>
 

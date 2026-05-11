@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Console\V1;
 
+use App\Models\InventoryHistory;
 use App\Traits\RelationShortcut;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Resources\MissingValue;
@@ -18,16 +19,23 @@ class InventoryHistoriesResource extends JsonResource
      */
     public function toArray($request)
     {
-        return [
+        $return = [
             'uuid' => $this->uuid,
             'name' => $this->getPropWhenLoaded('user', 'name') ?? new MissingValue,
             'status' => $this->status,
-            'qty' => $this->qty . $this->getPropWhenLoaded('inventory', 'unit'),
-            'price' => "Rp" . number_format($this->price, 2, ",", "."),
-            'price_per_unit' => round(($this->price / $this->qty), 2),
-            'old_qty' => $this->payload['old_qty'] . $this->getPropWhenLoaded('inventory', 'unit'),
-            'new_qty' => $this->payload['new_qty'] . $this->getPropWhenLoaded('inventory', 'unit'),
+            'qty' => $this->qty.$this->getPropWhenLoaded('inventory', 'unit'),
+            'price' => 'Rp'.number_format($this->price, 2, ',', '.'),
+            'price_per_unit' => round(($this->price / ($this->qty ?? 1)), 2),
+            'old_qty' => $this->payload['old_qty'].$this->getPropWhenLoaded('inventory', 'unit'),
+            'new_qty' => $this->payload['new_qty'].$this->getPropWhenLoaded('inventory', 'unit'),
             'created_at' => $this->created_at,
         ];
+        if ($this->getPropWhenLoaded('inventory', 'stock_type') == 'fixed') {
+            $return['qty'] = ($return['status'] == InventoryHistory::STATUS_IN) ? '(Fixed)' : $return['qty'];
+            $return['old_qty'] = '-';
+            $return['new_qty'] = '-';
+        }
+
+        return $return;
     }
 }

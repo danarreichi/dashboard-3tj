@@ -1,10 +1,5 @@
-const apiHost = window.location.hostname;
-const apiPort = window.location.port;
-const host = `http://${apiHost}:${apiPort}/api/console/v1/`;
-const pageHost = `http://${apiHost}:${apiPort}/`;
 let startBetween = null;
 let inventoryHistoryTable;
-
 $(document).ready(function () {
     getProfile();
     if (getQueryParamValue('filter[trashed]')) $('#filterTrashed').val(getQueryParamValue('filter[trashed]'));
@@ -38,6 +33,24 @@ const Swal2 = Swal.mixin({
         input: 'form-control'
     }
 });
+
+function toggleQtyField(element) {
+    let stockType = $(element).val();
+    let qtyField = $(element).closest('form').find('input[name="qty"]');
+    let qtyWrapper = $(element).closest('form').find('.qtyFieldWrapper');
+    hideField(qtyWrapper, qtyField, stockType);
+}
+
+function hideField(qtyWrapperElement, qtyFieldElement, stockType) {
+    if (stockType === 'fixed') {
+        qtyWrapperElement.hide();
+        qtyFieldElement.removeAttr('required');
+        qtyFieldElement.val('');
+    } else {
+        qtyWrapperElement.show();
+        qtyFieldElement.attr('required', 'required');
+    }
+}
 
 function getProfile() {
     var headers = {
@@ -75,6 +88,8 @@ function addInventory(element) {
             clearInputErrors();
             $('#primary').modal('hide');
             clearForm(element.id);
+            $('.qtyFieldWrapper').show();
+            $('.qtyFieldWrapper').find('input[name="qty"]').attr('required', 'required');
             Toast.fire({
                 icon: 'success',
                 title: 'Data berhasil ditambahkan',
@@ -309,6 +324,17 @@ function getModalInventoryName(element) {
         data: queryParams,
         headers: headers,
         success: function (response) {
+            if (response.data.stock_type == 'fixed') {
+                response.data.unit = '';
+                $('#adjustStockForm').find('.qtyFieldWrapper').next().removeClass('col-5').addClass('col-10');
+            } else {
+                $('#adjustStockForm').find('.qtyFieldWrapper').next().removeClass('col-10').addClass('col-5');
+            }
+            hideField(
+                $('#adjustStockForm').find('.qtyFieldWrapper'),
+                $('#adjustStockForm').find('input[name="qty"]'),
+                response.data.stock_type
+            );
             $('#uuidAdjust').val(response.data.uuid);
             $('#modalInventoryName').html(response.data.name);
             $('#modalInventoryQty').html(`${response.data.qty} ${response.data.unit}`);
@@ -334,6 +360,11 @@ function getInventory(element) {
             $('#uuidEdit').val(response.data.uuid);
             $('#nameEdit').val(response.data.name);
             $('#unitEdit').val(response.data.unit);
+            hideField(
+                $('#editInventoryForm').find('.qtyFieldWrapper'),
+                $('#editInventoryForm').find('input[name="qty"]'),
+                response.data.stock_type
+            );
             $('#qtyEdit').val(response.data.qty);
             $('#delete').attr('data-uuid', response.data.uuid);
             $('#secondaryEdit').modal('show');

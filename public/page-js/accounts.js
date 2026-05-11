@@ -1,7 +1,3 @@
-const apiHost = window.location.hostname;
-const apiPort = window.location.port;
-const host = `http://${apiHost}:${apiPort}/api/console/v1/`;
-const pageHost = `http://${apiHost}:${apiPort}/`;
 let flatPickr;
 let startBetween = null;
 let accountHistoryTable;

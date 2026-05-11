@@ -62,18 +62,25 @@ class MenuPriceRepository extends BaseRepository
     {
         $data = parent::index()
             ->whereHas('menu', function ($q) {
-                $q->when(request('q'), fn ($q) => $q->where('name', 'LIKE', '%' . request('q') . '%'));
+                $q->when(request('q'), fn($q) => $q->where('name', 'LIKE', '%' . request('q') . '%'));
                 $q->when(request('category_uuid'), function ($q) {
-                    $q->whereHas('category', fn ($q) => $q->where('uuid', request('category_uuid')));
+                    $q->whereHas('category', fn($q) => $q->where('uuid', request('category_uuid')));
                 });
             })->with('menu')->where('status', 'active')
             ->addSelect([
                 'stock_remaining' => MenuRecipe::selectRaw('CAST(MIN(COALESCE(inventories.qty / menu_recipes.qty, 0)) AS INTEGER)')
                     ->join('inventory_histories', 'menu_recipes.inventory_history_id', '=', 'inventory_histories.id')
                     ->join('inventories', 'inventory_histories.inventory_id', '=', 'inventories.id')
+                    ->whereNot('inventories.stock_type', Inventory::FIXED)
                     ->whereColumn('menu_prices.id', 'menu_recipes.menu_price_id')
                     ->limit(1),
-                'availability' => MenuRecipe::selectRaw('CASE WHEN CAST(MIN(COALESCE(inventories.qty / menu_recipes.qty, 0)) AS INTEGER) > 0 THEN 1 ELSE 0 END')
+                'availability' => MenuRecipe::selectRaw('CASE WHEN MIN(COALESCE(inventories.qty / menu_recipes.qty, 0)) IS NULL OR CAST(MIN(COALESCE(inventories.qty / menu_recipes.qty, 0)) AS INTEGER) > 0 THEN 1 ELSE 0 END')
+                    ->join('inventory_histories', 'menu_recipes.inventory_history_id', '=', 'inventory_histories.id')
+                    ->join('inventories', 'inventory_histories.inventory_id', '=', 'inventories.id')
+                    ->whereNot('inventories.stock_type', Inventory::FIXED)
+                    ->whereColumn('menu_prices.id', 'menu_recipes.menu_price_id')
+                    ->limit(1),
+                'is_all_fixed' => MenuRecipe::selectRaw('CASE WHEN COUNT(menu_recipes.id) > 0 AND SUM(CASE WHEN inventories.stock_type != ? THEN 1 ELSE 0 END) = 0 THEN 1 ELSE 0 END', [Inventory::FIXED])
                     ->join('inventory_histories', 'menu_recipes.inventory_history_id', '=', 'inventory_histories.id')
                     ->join('inventories', 'inventory_histories.inventory_id', '=', 'inventories.id')
                     ->whereColumn('menu_prices.id', 'menu_recipes.menu_price_id')
@@ -87,44 +94,42 @@ class MenuPriceRepository extends BaseRepository
     {
         $recipes = MenuRecipe::query()
             ->with('history.inventory')
-            ->whereHas('price', function($q) use ($attributes) {
+            ->whereHas('price', function ($q) use ($attributes) {
                 $q->where('status', 'active');
                 $q->whereIn('uuid', collect($attributes['data'])->pluck('uuid'));
             })
             ->get();
 
-        $neededRecipes = $recipes->map(function($recipe) use ($attributes) {
+        $neededRecipes = $recipes->map(function ($recipe) use ($attributes) {
             $matchingData = collect($attributes['data'])->firstWhere('uuid', $recipe->price->uuid);
             $recipe->qty_asked = $matchingData['qty'] * $recipe->qty;
             return $recipe;
         });
 
-        $prices = collect($attributes['data'])->map(function($item) {
+        $prices = collect($attributes['data'])->map(function ($item) {
             $matchData = MenuPrice::where('uuid', $item['uuid'])->firstOrFail();
             $item['subtotal'] = $matchData->price * $item['qty'];
             return $item;
         });
 
-        $inventories = Inventory::get();
+        $inventories = Inventory::whereNot('inventories.stock_type', Inventory::FIXED)->get();
 
-        $neededRecipes->each(function($recipe) use (&$inventories) {
+        $neededRecipes->each(function ($recipe) use (&$inventories) {
             $inventory = $inventories->where('id', $recipe->history->inventory->id)->first();
             if ($inventory) $inventory->qty -= $recipe->qty_asked;
         });
 
-        // Prepare the subquery values
-        $inventoriesSubQueryValues = $inventories->map(function ($inventory) {
-            return "SELECT " . (int) $inventory->id . " AS id, " . (int) $inventory->qty . " AS qty";
-        })->implode(' UNION ALL ');
+        $inventoriesSubQueryValues = $inventories->isNotEmpty()
+            ? $inventories->map(fn($inventory) => "SELECT " . (int) $inventory->id . " AS id, " . (int) $inventory->qty . " AS qty")->implode(' UNION ALL ')
+            : "SELECT NULL AS id, NULL AS qty WHERE 1=0";
 
-        // Build the complete query with the subquery directly
         $inventoriesSubQuery = DB::table(DB::raw("($inventoriesSubQueryValues) AS inventories"));
 
         $data = parent::index()
-            ->whereHas('menu', function($q) use ($param) {
-                if($param){
-                    $q->where('name', 'LIKE', '%'. $param['q']. '%');
-                    if (array_key_exists('category_uuid', $param)) $q->whereHas('category', fn ($q) => $q->where('uuid', $param['category_uuid']));
+            ->whereHas('menu', function ($q) use ($param) {
+                if ($param) {
+                    $q->where('name', 'LIKE', '%' . $param['q'] . '%');
+                    if (array_key_exists('category_uuid', $param)) $q->whereHas('category', fn($q) => $q->where('uuid', $param['category_uuid']));
                 }
             })
             ->with(['menu'])
@@ -137,11 +142,16 @@ class MenuPriceRepository extends BaseRepository
                     })
                     ->whereColumn('menu_prices.id', 'menu_recipes.menu_price_id')
                     ->limit(1),
-                'availability' => MenuRecipe::selectRaw('CASE WHEN CAST(MIN(COALESCE(inventories.qty / menu_recipes.qty, 0)) AS INTEGER) > 0 THEN 1 ELSE 0 END')
+                'availability' => MenuRecipe::selectRaw('CASE WHEN MIN(COALESCE(inventories.qty / menu_recipes.qty, 0)) IS NULL OR CAST(MIN(COALESCE(inventories.qty / menu_recipes.qty, 0)) AS INTEGER) > 0 THEN 1 ELSE 0 END')
                     ->join('inventory_histories', 'menu_recipes.inventory_history_id', '=', 'inventory_histories.id')
                     ->joinSub($inventoriesSubQuery, 'inventories', function ($join) {
                         $join->on('inventory_histories.inventory_id', '=', 'inventories.id');
                     })
+                    ->whereColumn('menu_prices.id', 'menu_recipes.menu_price_id')
+                    ->limit(1),
+                'is_all_fixed' => MenuRecipe::selectRaw('CASE WHEN COUNT(menu_recipes.id) > 0 AND SUM(CASE WHEN inventories.stock_type != ? THEN 1 ELSE 0 END) = 0 THEN 1 ELSE 0 END', [Inventory::FIXED])
+                    ->join('inventory_histories', 'menu_recipes.inventory_history_id', '=', 'inventory_histories.id')
+                    ->join('inventories', 'inventory_histories.inventory_id', '=', 'inventories.id')
                     ->whereColumn('menu_prices.id', 'menu_recipes.menu_price_id')
                     ->limit(1)
             ])
@@ -152,7 +162,7 @@ class MenuPriceRepository extends BaseRepository
 
     public function activatePrice(Menu $menu, MenuPrice $price)
     {
-        parent::index()->whereHas('menu', fn ($q) => $q->where('id', $menu->id))->update(['status' => 'inactive']);
+        parent::index()->whereHas('menu', fn($q) => $q->where('id', $menu->id))->update(['status' => 'inactive']);
         $data = $price->update(['status' => 'active']);
         return $data;
     }

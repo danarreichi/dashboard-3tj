@@ -1,8 +1,3 @@
-const apiHost = window.location.hostname;
-const apiPort = window.location.port;
-const host = `http://${apiHost}:${apiPort}/api/console/v1/`;
-const pageHost = `http://${apiHost}:${apiPort}/`;
-
 $(document).ready(function () {
     getProfile();
     if (getQueryParamValue('filter[trashed]')) $('#filterTrashed').val(getQueryParamValue('filter[trashed]'));

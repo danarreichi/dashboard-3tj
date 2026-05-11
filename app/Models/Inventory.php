@@ -11,6 +11,9 @@ class Inventory extends BaseModel
 {
     use HasFactory, SoftDeletes;
 
+    public const REDUCIBLE = 'reducible';
+    public const FIXED = 'fixed';
+
     public static function boot()
     {
         parent::boot();

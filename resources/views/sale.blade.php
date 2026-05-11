@@ -52,6 +52,11 @@
                                         <h5 class="m-0">Diskon Terpakai: <span id="usedDiscounts">Rp0,00</span></h5>
                                         <h5 class="m-0">Pendapatan Setelah Diskon: <span id="earningsAfterDiscount">Rp0,00</span></h5>
                                     </div>
+                                    <div class="p-3 m-0 card-body d-flex justify-content-around">
+                                        <h5 class="m-0">HPP: <span id="totalHpp">Rp0,00</span></h5>
+                                        <h5 class="m-0">Pendapatan Bersih: <span id="earningsClean">Rp0,00</span></h5>
+                                        <h5 class="m-0">Pendapatan Bersih Setelah Diskon: <span id="earningsCleanAfterDiscount">Rp0,00</span></h5>
+                                    </div>
                                 </div>
                             </div>
                             <div class="col-12">
@@ -135,8 +140,8 @@
     <script src="{{ asset('dist/assets/extensions/flatpickr/flatpickr.min.js') }}"></script>
     <script src="{{ asset('dist/assets/extensions/flatpickr/l10n/id.js') }}"></script>
     {{-- Page JS --}}
-    <script src="{{ asset('page-js-min/base.js') }}"></script>
-    <script src="{{ asset('page-js-min/sale.js') }}"></script>
+    <script src="{{ asset('page-js/base.js') }}"></script>
+    <script src="{{ asset('page-js/sale.js') }}"></script>
 </body>
 
 </html>
