@@ -119,12 +119,10 @@ class MenuPriceRepository extends BaseRepository
             if ($inventory) $inventory->qty -= $recipe->qty_asked;
         });
 
-        // Prepare the subquery values
-        $inventoriesSubQueryValues = $inventories->map(function ($inventory) {
-            return "SELECT " . (int) $inventory->id . " AS id, " . (int) $inventory->qty . " AS qty";
-        })->implode(' UNION ALL ');
+        $inventoriesSubQueryValues = $inventories->isNotEmpty()
+            ? $inventories->map(fn($inventory) => "SELECT " . (int) $inventory->id . " AS id, " . (int) $inventory->qty . " AS qty")->implode(' UNION ALL ')
+            : "SELECT NULL AS id, NULL AS qty WHERE 1=0";
 
-        // Build the complete query with the subquery directly
         $inventoriesSubQuery = DB::table(DB::raw("($inventoriesSubQueryValues) AS inventories"));
 
         $data = parent::index()
