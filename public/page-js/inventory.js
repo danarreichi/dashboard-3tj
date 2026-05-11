@@ -88,6 +88,8 @@ function addInventory(element) {
             clearInputErrors();
             $('#primary').modal('hide');
             clearForm(element.id);
+            $('.qtyFieldWrapper').show();
+            $('.qtyFieldWrapper').find('input[name="qty"]').attr('required', 'required');
             Toast.fire({
                 icon: 'success',
                 title: 'Data berhasil ditambahkan',
