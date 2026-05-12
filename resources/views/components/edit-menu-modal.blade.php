@@ -19,9 +19,7 @@
                     </div>
                     <label for="unit" class="form-label">Kategori menu</label>
                     <div class="form-group">
-                        <select name="menu_category_id" id="menuCategoryIdEdit" class="form-control">
-                            <option value="" style="display: none;" selected>Pilih kategori menu</option>
-                        </select>
+                        <select name="menu_category_id" id="menuCategoryIdEdit" class="form-control"></select>
                     </div>
                     <label for="code" class="form-label">Gambar produk</label>
                     <div class="form-group">

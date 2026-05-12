@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>var t=localStorage.getItem('theme');if(t)document.documentElement.setAttribute('data-bs-theme',t);</script>
     <title>Inventory - Mazer Admin Dashboard</title>
 
     <link rel="shortcut icon"
@@ -24,10 +25,10 @@
     <link rel="stylesheet" crossorigin href="{{ asset('dist/assets/compiled/css/table-datatable-jquery.css') }}">
     {{-- Flatpickr --}}
     <link rel="stylesheet" href="{{ asset('dist/assets/extensions/flatpickr/flatpickr.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('dist/assets/extensions/flatpickr/flatpickr-custom-style.css') }}">
 </head>
 
 <body>
-    <script src="{{ asset('dist/assets/static/js/initTheme.js') }}"></script>
     <div id="app">
         <x-sidebar></x-sidebar>
         <div id="main">

@@ -19,10 +19,7 @@
                                     <div class="row w-100">
                                         <div class="col-5">
                                             <label for="qty" class="form-label">Bahan</label>
-                                            <select name="inventory" id="inventories" class="form-control" onchange="changeUnitPlaceholder(this)" required>
-                                                <option value="" style="display: none;" selected>Pilih bahan yang
-                                                    dibutuhkan</option>
-                                            </select>
+                                            <select name="inventory" id="inventories" class="form-control" required></select>
                                         </div>
                                         <div class="col-5">
                                             <label for="price" class="form-label">Jumlah</label>
