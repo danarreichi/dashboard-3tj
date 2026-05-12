@@ -25,7 +25,16 @@
                     </div>
                     <label for="code" class="form-label">Gambar produk</label>
                     <div class="form-group">
-                        <input type="file" class="form-control" name="image" id="image" accept="image/png, image/jpeg">
+                        <div class="d-flex gap-2">
+                            <input type="file" class="form-control" name="image" id="imageEdit" accept="image/png, image/jpeg">
+                            <button type="button" class="btn btn-outline-danger" id="clearImageEdit" onclick="clearImageInput()" title="Hapus gambar" style="display: none;">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+                        <input type="hidden" name="clear_image" id="clearImageFlag" value="0">
+                        <div id="imagePreviewEdit" class="mt-2" style="display: none;">
+                            <img id="imagePreviewImgEdit" src="" alt="Preview" style="max-height: 100px; max-width: 100%; border-radius: 4px; object-fit: contain;">
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
