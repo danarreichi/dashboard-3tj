@@ -42,7 +42,7 @@ class MenuController extends Controller
         ];
         $menu = DB::transaction(function () use ($request, $attributes) {
             $data = $this->repository->create($attributes);
-            $this->mediafileRepository->createByModel($data, "menu/{$data->uuid}", $request->image);
+            if ($request->has('image')) $this->mediafileRepository->createByModel($data, "menu/{$data->uuid}", $request->image);
             return $data;
         });
         return new MenuResource($menu);
@@ -61,7 +61,15 @@ class MenuController extends Controller
         ];
         $menu = DB::transaction(function () use ($attributes, $menu, $request) {
             $data = $this->repository->update($menu, $attributes);
-            if($request->has('image')) $this->mediafileRepository->replaceMediaWithDelete($menu->image, "menu/{$data->uuid}", $request->image);
+            if ($request->hasFile('image')) {
+                if ($menu->image) {
+                    $this->mediafileRepository->replaceMediaWithDelete($menu->image, "menu/{$data->uuid}", $request->image);
+                } else {
+                    $this->mediafileRepository->createByModel($data, "menu/{$data->uuid}", $request->image);
+                }
+            } elseif ($request->boolean('clear_image') && $menu->image) {
+                $this->mediafileRepository->destroy($menu->image);
+            }
             return $data;
         });
         return new MenuResource($menu);

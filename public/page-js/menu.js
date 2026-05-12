@@ -150,7 +150,10 @@ let customized_datatable = $('#menuTable').DataTable({
         {
             data: null,
             render: function (data, type, row) {
-                return `<img src="${pageHost}${row.image}" class="me-2" style="width: 100px; height: 100px; object-fit: cover;"></img>` + row.name;
+                const imgEl = row.image
+                    ? `<img src="${pageHost}${row.image}" class="me-2" style="width: 100px; height: 100px; object-fit: cover;">`
+                    : `<div class="me-2 d-inline-flex align-items-center justify-content-center bg-secondary rounded text-white" style="width: 100px; height: 100px; font-size: 0.7rem;">No Image</div>`;
+                return imgEl + row.name;
             }
         },
         {
@@ -240,6 +243,12 @@ function getMenu(element) {
             $('#nameEdit').val(response.data.name);
             $('#menuCategoryIdEdit').val(response.data.category_uuid);
             $('#delete').attr('data-uuid', response.data.uuid);
+            resetImageEdit();
+            if (response.data.image) {
+                $('#imagePreviewImgEdit').attr('src', response.data.image);
+                $('#imagePreviewEdit').show();
+                $('#clearImageEdit').show();
+            }
             $('#secondaryEdit').modal('show');
         },
         error: function (xhr, status, error) {
@@ -727,3 +736,37 @@ const setTableColor = () => {
     });
 }
 setTableColor();
+
+function resetImageEdit() {
+    $('#imageEdit').val('');
+    $('#clearImageFlag').val('0');
+    $('#imagePreviewEdit').hide();
+    $('#imagePreviewImgEdit').attr('src', '');
+    $('#clearImageEdit').hide();
+}
+
+function clearImageInput() {
+    $('#imageEdit').val('');
+    $('#clearImageFlag').val('1');
+    $('#imagePreviewEdit').hide();
+    $('#imagePreviewImgEdit').attr('src', '');
+    $('#clearImageEdit').hide();
+}
+
+$('#imageEdit').on('change', function () {
+    const file = this.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            $('#imagePreviewImgEdit').attr('src', e.target.result);
+            $('#imagePreviewEdit').show();
+            $('#clearImageEdit').show();
+            $('#clearImageFlag').val('0');
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+$('#secondaryEdit').on('hidden.bs.modal', function () {
+    resetImageEdit();
+});

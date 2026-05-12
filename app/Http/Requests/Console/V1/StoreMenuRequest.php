@@ -29,7 +29,7 @@ class StoreMenuRequest extends FormRequest
         return [
             'name' => ['required', Rule::unique('menus', 'name')],
             'menu_category_id' => ['required', Rule::exists('menu_categories', 'uuid')],
-            'image' => ['required', 'file', 'mimes:png,jpg']
+            'image' => ['nullable', 'file', 'mimes:png,jpg']
         ];
     }
 
