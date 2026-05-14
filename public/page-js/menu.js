@@ -118,6 +118,8 @@ function addMenu(element) {
         contentType: false, // Tell jQuery not to process the data
         processData: false, // Tell jQuery not to set contentType,
         headers: headers,
+        beforeSend: function () { showLoading(); },
+        complete: function () { hideLoading(); },
         success: function (response) {
             clearInputErrors();
             $('#primary').modal('hide');
@@ -250,6 +252,8 @@ function getMenu(element) {
         type: 'GET',
         data: queryParams,
         headers: headers,
+        beforeSend: function () { showLoading(); },
+        complete: function () { hideLoading(); },
         success: function (response) {
             $('#uuidEdit').val(response.data.uuid);
             $('#nameEdit').val(response.data.name);
@@ -283,6 +287,8 @@ function getPrices(element) {
         type: 'GET',
         data: queryParams,
         headers: headers,
+        beforeSend: function () { showLoading(); },
+        complete: function () { hideLoading(); },
         success: function (response) {
             document.getElementById('tempRecipeForm').setAttribute('data-uuid', element.dataset.uuid);
             $('#modalMenuName').html(response.meta.menu_name);
@@ -566,6 +572,8 @@ function saveMenuPriceForm(element) {
         type: 'POST',
         data: dataObject,
         headers: headers,
+        beforeSend: function () { showLoading(); },
+        complete: function () { hideLoading(); },
         success: function (response) {
             clearInputErrors();
             Toast.fire({
@@ -629,6 +637,8 @@ function editMenu(element) {
         contentType: false, // Tell jQuery not to process the data
         processData: false, // Tell jQuery not to set contentType,
         headers: headers,
+        beforeSend: function () { showLoading(); },
+        complete: function () { hideLoading(); },
         success: function (response) {
             $('#secondaryEdit').modal('hide');
             clearInputErrors();
@@ -675,6 +685,8 @@ function deleteMenu(element) {
                 url: host + 'menu/' + element.dataset.uuid,
                 type: 'DELETE',
                 headers: headers,
+                beforeSend: function () { showLoading(); },
+                complete: function () { hideLoading(); },
                 success: function (response) {
                     $('#secondaryEdit').modal('hide');
                     clearInputErrors();
@@ -719,6 +731,8 @@ function restoreMenu(element) {
                 url: host + 'menu/' + element.dataset.uuid + '/restore',
                 type: 'GET',
                 headers: headers,
+                beforeSend: function () { showLoading(); },
+                complete: function () { hideLoading(); },
                 success: function (response) {
                     Toast.fire({
                         icon: 'success',
@@ -755,6 +769,8 @@ function activatePrice(element) {
                 url: host + 'menu/' + element.dataset.menuUuid + '/price/' + element.dataset.uuid + '/activate',
                 type: 'GET',
                 headers: headers,
+                beforeSend: function () { showLoading(); },
+                complete: function () { hideLoading(); },
                 success: function (response) {
                     Toast.fire({
                         icon: 'success',

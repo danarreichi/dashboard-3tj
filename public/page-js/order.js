@@ -164,6 +164,8 @@ function continueCheckout() {
                 payment_method: payment.data('method')
             },
             headers: headers,
+            beforeSend: function () { showLoading(); },
+            complete: function () { hideLoading(); },
             success: function (response) {
                 selectedMenu = [];
 

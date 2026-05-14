@@ -127,8 +127,8 @@
     {{-- Select2 --}}
     <script src="{{ asset('dist/assets/extensions/select2/select2.min.js') }}"></script>
     {{-- Page JS --}}
-    <script src="{{ asset('page-js/base.js') }}"></script>
-    <script src="{{ asset('page-js/menu.js') }}"></script>
+    <script src="{{ asset('page-js/base.js') }}?v={{ filemtime(public_path('page-js/base.js')) }}"></script>
+    <script src="{{ asset('page-js/menu.js') }}?v={{ filemtime(public_path('page-js/menu.js')) }}"></script>
 </body>
 
 </html>

@@ -135,6 +135,8 @@ function addMenu(element) {
         contentType: false, // Tell jQuery not to process the data
         processData: false, // Tell jQuery not to set contentType,
         headers: headers,
+        beforeSend: function () { showLoading(); },
+        complete: function () { hideLoading(); },
         success: function (response) {
             clearInputErrors();
             $('#primary').modal('hide');
@@ -527,6 +529,8 @@ function saveMenuPriceForm(element) {
         type: 'POST',
         data: dataObject,
         headers: headers,
+        beforeSend: function () { showLoading(); },
+        complete: function () { hideLoading(); },
         success: function (response) {
             clearInputErrors();
             Toast.fire({
@@ -596,6 +600,8 @@ function editMenu(element) {
         contentType: false, // Tell jQuery not to process the data
         processData: false, // Tell jQuery not to set contentType,
         headers: headers,
+        beforeSend: function () { showLoading(); },
+        complete: function () { hideLoading(); },
         success: function (response) {
             $('#secondaryEdit').modal('hide');
             clearInputErrors();
@@ -643,6 +649,8 @@ function deleteMenu(element) {
                 url: host + 'menu/' + element.dataset.uuid,
                 type: 'DELETE',
                 headers: headers,
+                beforeSend: function () { showLoading(); },
+                complete: function () { hideLoading(); },
                 success: function (response) {
                     $('#secondaryEdit').modal('hide');
                     clearInputErrors();
@@ -687,6 +695,8 @@ function restoreMenu(element) {
                 url: host + 'menu/' + element.dataset.uuid + '/restore',
                 type: 'GET',
                 headers: headers,
+                beforeSend: function () { showLoading(); },
+                complete: function () { hideLoading(); },
                 success: function (response) {
                     Toast.fire({
                         icon: 'success',
@@ -724,6 +734,8 @@ function activatePrice(element) {
                     '/activate',
                 type: 'GET',
                 headers: headers,
+                beforeSend: function () { showLoading(); },
+                complete: function () { hideLoading(); },
                 success: function (response) {
                     Toast.fire({
                         icon: 'success',

@@ -141,8 +141,8 @@
     <script src="{{ asset('dist/assets/extensions/flatpickr/flatpickr.min.js') }}"></script>
     <script src="{{ asset('dist/assets/extensions/flatpickr/l10n/id.js') }}"></script>
     {{-- Page JS --}}
-    <script src="{{ asset('page-js/base.js') }}"></script>
-    <script src="{{ asset('page-js/sale.js') }}"></script>
+    <script src="{{ asset('page-js/base.js') }}?v={{ filemtime(public_path('page-js/base.js')) }}"></script>
+    <script src="{{ asset('page-js/sale.js') }}?v={{ filemtime(public_path('page-js/sale.js')) }}"></script>
 </body>
 
 </html>

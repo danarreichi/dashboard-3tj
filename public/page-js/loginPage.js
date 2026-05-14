@@ -51,6 +51,8 @@ function generateToken() {
         type: 'POST',
         dataType: 'json',
         data: $('#loginCred').serializeArray(),
+        beforeSend: function () { showLoading(); },
+        complete: function () { hideLoading(); },
         success: function (response) {
             var fromPath = getQueryParamValue('from-path');
             localStorage.setItem("bearer", response.token);

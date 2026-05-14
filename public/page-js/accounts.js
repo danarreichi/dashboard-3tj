@@ -61,6 +61,8 @@ function addAccount(element) {
         type: 'POST',
         data: $('#' + element.id).serializeArray(),
         headers: headers,
+        beforeSend: function () { showLoading(); },
+        complete: function () { hideLoading(); },
         success: function (response) {
             clearInputErrors();
             $('#primary').modal('hide');
@@ -320,6 +322,8 @@ function getModalAccountName(element) {
         type: 'GET',
         data: queryParams,
         headers: headers,
+        beforeSend: function () { showLoading(); },
+        complete: function () { hideLoading(); },
         success: function (response) {
             $('#modalUsername').html(response.data.name);
         },
@@ -339,6 +343,8 @@ function getAccount(element) {
         type: 'GET',
         data: queryParams,
         headers: headers,
+        beforeSend: function () { showLoading(); },
+        complete: function () { hideLoading(); },
         success: function (response) {
             clearInputErrors();
             $('#uuidEdit').val(response.data.uuid);
@@ -365,6 +371,8 @@ function editAccount(element) {
         type: 'PUT',
         data: $('#' + element.id).serializeArray(),
         headers: headers,
+        beforeSend: function () { showLoading(); },
+        complete: function () { hideLoading(); },
         success: function (response) {
             $('#secondaryEdit').modal('hide');
             clearInputErrors();
@@ -409,6 +417,8 @@ function deleteAccount(element) {
                 url: host + 'account/' + element.dataset.uuid,
                 type: 'DELETE',
                 headers: headers,
+                beforeSend: function () { showLoading(); },
+                complete: function () { hideLoading(); },
                 success: function (response) {
                     $('#secondaryEdit').modal('hide');
                     clearInputErrors();
@@ -453,6 +463,8 @@ function restoreAccount(element) {
                 url: host + 'account/' + element.dataset.uuid + '/restore',
                 type: 'GET',
                 headers: headers,
+                beforeSend: function () { showLoading(); },
+                complete: function () { hideLoading(); },
                 success: function (response) {
                     Toast.fire({
                         icon: 'success',

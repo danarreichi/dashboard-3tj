@@ -48,6 +48,8 @@ function addMenuCategory(element) {
         type: 'POST',
         data: $('#' + element.id).serializeArray(),
         headers: headers,
+        beforeSend: function () { showLoading(); },
+        complete: function () { hideLoading(); },
         success: function (response) {
             clearInputErrors();
             $('#primary').modal('hide');
@@ -170,6 +172,8 @@ function getMenuCategory(element) {
         type: 'GET',
         data: queryParams,
         headers: headers,
+        beforeSend: function () { showLoading(); },
+        complete: function () { hideLoading(); },
         success: function (response) {
             $('#uuidEdit').val(response.data.uuid);
             $('#nameEdit').val(response.data.name);
@@ -192,6 +196,8 @@ function editMenuCategory(element) {
         type: 'PUT',
         data: $('#' + element.id).serializeArray(),
         headers: headers,
+        beforeSend: function () { showLoading(); },
+        complete: function () { hideLoading(); },
         success: function (response) {
             $('#secondaryEdit').modal('hide');
             clearInputErrors();
@@ -238,6 +244,8 @@ function deleteMenuCategory(element) {
                 url: host + 'menu-category/' + element.dataset.uuid,
                 type: 'DELETE',
                 headers: headers,
+                beforeSend: function () { showLoading(); },
+                complete: function () { hideLoading(); },
                 success: function (response) {
                     $('#secondaryEdit').modal('hide');
                     clearInputErrors();
@@ -282,6 +290,8 @@ function restoreMenuCategory(element) {
                 url: host + 'menu-category/' + element.dataset.uuid + '/restore',
                 type: 'GET',
                 headers: headers,
+                beforeSend: function () { showLoading(); },
+                complete: function () { hideLoading(); },
                 success: function (response) {
                     Toast.fire({
                         icon: 'success',

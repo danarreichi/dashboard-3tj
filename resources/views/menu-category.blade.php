@@ -118,8 +118,8 @@
     <!-- SweetAlert2 -->
     <script src="{{ asset('dist/assets/extensions/sweetalert2/sweetalert2.min.js') }}"></script>
     {{-- Page JS --}}
-    <script src="{{ asset('page-js/base.js') }}"></script>
-    <script src="{{ asset('page-js/menu-category.js') }}"></script>
+    <script src="{{ asset('page-js/base.js') }}?v={{ filemtime(public_path('page-js/base.js')) }}"></script>
+    <script src="{{ asset('page-js/menu-category.js') }}?v={{ filemtime(public_path('page-js/menu-category.js')) }}"></script>
 </body>
 
 </html>

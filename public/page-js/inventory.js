@@ -84,6 +84,8 @@ function addInventory(element) {
         type: 'POST',
         data: $('#' + element.id).serializeArray(),
         headers: headers,
+        beforeSend: function () { showLoading(); },
+        complete: function () { hideLoading(); },
         success: function (response) {
             clearInputErrors();
             $('#primary').modal('hide');
@@ -323,6 +325,8 @@ function getModalInventoryName(element) {
         type: 'GET',
         data: queryParams,
         headers: headers,
+        beforeSend: function () { showLoading(); },
+        complete: function () { hideLoading(); },
         success: function (response) {
             if (response.data.stock_type == 'fixed') {
                 response.data.unit = '';
@@ -356,6 +360,8 @@ function getInventory(element) {
         type: 'GET',
         data: queryParams,
         headers: headers,
+        beforeSend: function () { showLoading(); },
+        complete: function () { hideLoading(); },
         success: function (response) {
             $('#uuidEdit').val(response.data.uuid);
             $('#nameEdit').val(response.data.name);
@@ -385,6 +391,8 @@ function editInventory(element) {
         type: 'PUT',
         data: $('#' + element.id).serializeArray(),
         headers: headers,
+        beforeSend: function () { showLoading(); },
+        complete: function () { hideLoading(); },
         success: function (response) {
             $('#secondaryEdit').modal('hide');
             clearInputErrors();
@@ -431,6 +439,8 @@ function deleteInventory(element) {
                 url: host + 'inventory/' + element.dataset.uuid,
                 type: 'DELETE',
                 headers: headers,
+                beforeSend: function () { showLoading(); },
+                complete: function () { hideLoading(); },
                 success: function (response) {
                     $('#secondaryEdit').modal('hide');
                     clearInputErrors();
@@ -475,6 +485,8 @@ function restoreInventory(element) {
                 url: host + 'inventory/' + element.dataset.uuid + '/restore',
                 type: 'GET',
                 headers: headers,
+                beforeSend: function () { showLoading(); },
+                complete: function () { hideLoading(); },
                 success: function (response) {
                     Toast.fire({
                         icon: 'success',
@@ -528,6 +540,8 @@ function adjustStock(element) {
                 type: 'POST',
                 data: data,
                 headers: headers,
+                beforeSend: function () { showLoading(); },
+                complete: function () { hideLoading(); },
                 success: function (response) {
                     clearInputErrors();
                     clearForm(element.id);
