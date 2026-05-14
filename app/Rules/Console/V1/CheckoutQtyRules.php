@@ -46,7 +46,7 @@ class CheckoutQtyRules implements Rule
                     ->whereNot('inventories.stock_type', Inventory::FIXED)
                     ->whereColumn('menu_prices.id', 'menu_recipes.menu_price_id')
                     ->limit(1),
-                'availability' => MenuRecipe::selectRaw('CASE WHEN CAST(MIN(COALESCE(inventories.qty / menu_recipes.qty, 0)) AS INTEGER) > 0 THEN 1 ELSE 0 END')
+                'availability' => MenuRecipe::selectRaw('CASE WHEN MIN(COALESCE(inventories.qty / menu_recipes.qty, 0)) IS NULL OR CAST(MIN(COALESCE(inventories.qty / menu_recipes.qty, 0)) AS INTEGER) > 0 THEN 1 ELSE 0 END')
                     ->join('inventory_histories', 'menu_recipes.inventory_history_id', '=', 'inventory_histories.id')
                     ->join('inventories', 'inventory_histories.inventory_id', '=', 'inventories.id')
                     ->whereNot('inventories.stock_type', Inventory::FIXED)
@@ -61,11 +61,10 @@ class CheckoutQtyRules implements Rule
                 $qty = $matchingData['qty'];
                 $item->subtotal = $qty * $item->price;
                 $item->recipes = $item->recipes->map(function ($recipe) use ($qty) {
-                    if ($recipe->history->inventory->stock_type == Inventory::FIXED) {
-                        $recipe->history->inventory->qty = $qty;
+                    if ($recipe->history->inventory->stock_type !== Inventory::FIXED) {
+                        $qtyAsked = $recipe->qty * $qty;
+                        $recipe->history->inventory->qty = $recipe->history->inventory->qty - $qtyAsked;
                     }
-                    $qtyAsked = $recipe->qty * $qty;
-                    $recipe->history->inventory->qty = $recipe->history->inventory->qty - $qtyAsked;
 
                     return $recipe;
                 });
@@ -77,18 +76,20 @@ class CheckoutQtyRules implements Rule
         $setNewMenuStock = $setNewInventoryTemp->map(function ($item) {
             $stockRemaining = [];
             $item->recipes->map(function ($recipe) use (&$stockRemaining) {
+                if ($recipe->history->inventory->stock_type === Inventory::FIXED) return;
                 $result = floor($recipe->history->inventory->qty / $recipe->qty);
                 array_push($stockRemaining, $result);
             });
-            $item->stock_remaining = min($stockRemaining);
-            if (min($stockRemaining) == 0) {
+            $item->stock_remaining = empty($stockRemaining) ? null : min($stockRemaining);
+            if (!empty($stockRemaining) && min($stockRemaining) == 0) {
                 $item->availability = 0;
             }
 
             return $item;
         });
 
-        if ($setNewMenuStock->firstWhere('uuid', $allValue['uuid'])->stock_remaining < 0) {
+        $menuItem = $setNewMenuStock->firstWhere('uuid', $allValue['uuid']);
+        if ($menuItem->stock_remaining !== null && $menuItem->stock_remaining < 0) {
             $this->errorMessage = 'Stok menu tidak mencukupi';
 
             return false;

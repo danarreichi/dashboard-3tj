@@ -40,21 +40,38 @@ class MenuPriceRepository extends BaseRepository
 
     public function insertPriceAndRecipes(Menu $menu, array $attributes): Model
     {
-        $price = $attributes['price'];
         $menuPrice = parent::create([
-            'price' => $price,
-            'menu_id' => $menu->id
+            'price' => $attributes['price'],
+            'menu_id' => $menu->id,
         ]);
-        $recipes = $attributes['recipes'];
-        $recipesInsert = collect($recipes)->map(function ($recipe) use ($menuPrice) {
-            $recipe['menu_price_id'] = $menuPrice->id;
-            $recipe['inventory_history_id'] = InventoryHistory::where('uuid', $recipe['uuid'])->first()->id;
-            $recipe['qty'] = $recipe['qty'];
-            return $recipe;
+
+        $recipesInsert = collect($attributes['recipes'])->map(function ($recipe) use ($menuPrice) {
+            $isCustom = filter_var($recipe['is_custom'] ?? false, FILTER_VALIDATE_BOOLEAN);
+
+            if ($isCustom) {
+                $inventory = Inventory::where('uuid', $recipe['uuid'])->firstOrFail();
+                $history = InventoryHistory::create([
+                    'inventory_id' => $inventory->id,
+                    'user_id' => Auth::id(),
+                    'status' => InventoryHistory::STATUS_IN,
+                    'qty' => 1,
+                    'price' => $recipe['custom_price'],
+                    'is_custom' => true,
+                    'payload' => (object) [],
+                ]);
+            } else {
+                $history = InventoryHistory::where('uuid', $recipe['uuid'])->firstOrFail();
+            }
+
+            return [
+                'menu_price_id' => $menuPrice->id,
+                'inventory_history_id' => $history->id,
+                'qty' => $recipe['qty'],
+            ];
         })->values();
-        $recipesInsert->each(function ($recipe) {
-            MenuRecipe::create($recipe);
-        });
+
+        $recipesInsert->each(fn ($recipe) => MenuRecipe::create($recipe));
+
         return $menuPrice;
     }
 

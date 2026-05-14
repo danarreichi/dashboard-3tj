@@ -67,7 +67,7 @@
                                     <th>No.</th>
                                     <th>Bahan</th>
                                     <th>Qty</th>
-                                    <th>Harga restock</th>
+                                    <th>Harga bahan</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>

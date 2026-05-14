@@ -371,30 +371,50 @@ function getPrices(element) {
     });
 }
 
-function getInventoryHistoryDropdown(inventoryUuid) {
-    var queryParams = {};
-    var headers = {
-        'Authorization': 'Bearer ' + localStorage.getItem("bearer")
-    };
-    $.ajax({
-        url: host + 'dropdown/inventory/' + inventoryUuid + '/history',
-        type: 'GET',
-        data: queryParams,
-        headers: headers,
-        success: function (response) {
-            var selectElement = $(`#${inventoryUuid}`);
-            selectElement.empty(); // Clear existing options
-            selectElement.append(
-                '<option value="" style="display: none;" disabled selected>Pilih harga restock terbaru</option>'
-            );
-            response.data.forEach(function (item, index) {
-                selectElement.append(`<option value="${item.uuid}" data-price-per-unit="${item.price_per_unit}">${item.price} @${item.qty}</option>`);
-            });
-        },
-        error: function (xhr, status, error) {
-            console.error(JSON.parse(xhr.responseText).message);
+function initHistorySelect2(inventoryUuid) {
+    $('#' + inventoryUuid).select2({
+        theme: 'bootstrap-5',
+        placeholder: 'Pilih harga restock',
+        dropdownParent: $('#successAddMenuPrice'),
+        ajax: {
+            url: host + 'dropdown/inventory/' + inventoryUuid + '/history',
+            headers: { 'Authorization': 'Bearer ' + localStorage.getItem('bearer') },
+            dataType: 'json',
+            delay: 250,
+            processResults: function (response) {
+                return {
+                    results: response.data.map(function (item) {
+                        return { id: item.uuid, text: item.price + ' @' + item.qty, pricePerUnit: item.price_per_unit };
+                    })
+                };
+            },
+            cache: true
         }
+    }).on('select2:select', function () {
+        calculateHpp();
     });
+}
+
+function switchPriceMode(button, inventoryUuid, mode) {
+    var btnGroup = $(button).closest('.btn-group');
+    btnGroup.find('.btn').removeClass('active');
+    $(button).addClass('active');
+
+    if (mode === 'history') {
+        $('#custom-section-' + inventoryUuid).hide();
+        $('#custom-price-' + inventoryUuid).prop('required', false).val('');
+        $('#history-section-' + inventoryUuid).show();
+        $('#' + inventoryUuid).prop('required', true);
+        $('#is-custom-' + inventoryUuid).val('0');
+    } else {
+        $('#history-section-' + inventoryUuid).hide();
+        $('#' + inventoryUuid).prop('required', false).val(null).trigger('change');
+        $('#custom-section-' + inventoryUuid).show();
+        $('#custom-price-' + inventoryUuid).prop('required', true);
+        $('#is-custom-' + inventoryUuid).val('1');
+    }
+
+    calculateHpp();
 }
 
 const rupiah = (number) => {
@@ -404,22 +424,26 @@ const rupiah = (number) => {
     }).format(number);
 }
 
-// var HPP = 0;
 function calculateHpp() {
     let HPP = 0;
-    if ($('[name="inventory_history[]"]').length === 0) {
-        $('#hppPlaceholder').html(`HPP: ${rupiah(HPP)}`);
-        return; // Exit function early if there are no elements
-    }
-    $('[name="inventory_history[]"]').each(function () {
-        var selectedOption = $(this).find('option:selected');
-        var pricePerUnit = selectedOption.data('price-per-unit') ? selectedOption.data('price-per-unit') : 0;
 
-        // Find the nearest <tr> element
-        var row = $(this).closest('tr');
-        var qty = parseFloat(row.find('input[name="qty[]"]').val());
-        HPP = HPP + (pricePerUnit * qty);
+    $('[name="is_custom[]"]').each(function () {
+        var group = $(this).data('group');
+        var isCustom = $(this).val() === '1';
+        var qty = parseFloat($('input[name="qty[]"][data-group="' + group + '"]').val()) || 0;
+
+        if (isCustom) {
+            var customPrice = parseFloat($('#custom-price-' + group).val()) || 0;
+            HPP += customPrice * qty;
+        } else {
+            var selectedData = $('#' + group).select2('data');
+            var pricePerUnit = (selectedData && selectedData.length > 0 && selectedData[0].id)
+                ? parseFloat(selectedData[0].pricePerUnit) || 0
+                : 0;
+            HPP += pricePerUnit * qty;
+        }
     });
+
     $('#hppPlaceholder').html(`HPP: ${rupiah(HPP)}`);
 }
 
@@ -448,23 +472,37 @@ function addRecipeTemp(element) {
     var selectedData = $('#inventories').select2('data')[0];
     var inventoryName = selectedData ? selectedData.text : '';
     var inventoryUnit = selectedData ? selectedData.unit : '';
+    var uuid = attributes[0].value;
+    var qty = attributes[1].value;
     var rowCount = $('#addMenuPriceTable tbody tr').length + 1;
+
     var newRow = `<tr>
                 <td class="row-number">${rowCount}</td>
                 <td>${inventoryName}</td>
-                <td>${attributes[1].value}${inventoryUnit}</td>
+                <td>${qty}${inventoryUnit || ''}</td>
                 <td>
-                    <select id="${attributes[0].value}" data-group="${attributes[0].value}" onchange="calculateHpp()" name="inventory_history[]" class="form-control" required>
-                        <option style="display: none;" selected>Pilih harga restock terbaru</option>
-                    </select>
+                    <div class="btn-group btn-group-sm w-100 mb-1" role="group">
+                        <button type="button" class="btn btn-outline-secondary active" onclick="switchPriceMode(this, '${uuid}', 'manual')">Manual</button>
+                        <button type="button" class="btn btn-outline-secondary" onclick="switchPriceMode(this, '${uuid}', 'history')">Riwayat</button>
+                    </div>
+                    <div id="history-section-${uuid}" style="display:none; width:100%;">
+                        <select id="${uuid}" data-group="${uuid}" name="inventory_history[]" class="form-control" style="width:100%;"></select>
+                    </div>
+                    <div id="custom-section-${uuid}" style="width:100%;">
+                        <div class="input-group">
+                            <span class="input-group-text">Rp</span>
+                            <input type="number" id="custom-price-${uuid}" data-group="${uuid}" name="custom_price[]" class="form-control" min="1" placeholder="Harga per satuan" oninput="calculateHpp()" required>
+                        </div>
+                    </div>
                 </td>
-                <input type="hidden" id="inventoryUuid" value="${attributes[0].value}" data-group="${attributes[0].value}" name="inventory_uuid[]">
-                <input type="hidden" id="qty" value="${attributes[1].value}" data-group="${attributes[0].value}" name="qty[]">
+                <input type="hidden" value="${uuid}" data-group="${uuid}" name="inventory_uuid[]">
+                <input type="hidden" value="${qty}" data-group="${uuid}" name="qty[]">
+                <input type="hidden" id="is-custom-${uuid}" data-group="${uuid}" name="is_custom[]" value="1">
                 <td><button type="button" onclick="removeRow(this)" class="removeRow btn btn-danger w-100">Hapus</button></td>
                 </tr>`;
 
-    getInventoryHistoryDropdown(attributes[0].value);
     $('#addMenuPriceTable tbody').append(newRow);
+    initHistorySelect2(uuid);
     $('#saveMenuPriceButton').show();
     $('#inventories').val(null).trigger('change');
     $('[name="qtyTemp"]').val('');
@@ -496,22 +534,24 @@ function saveMenuPriceForm(element) {
     let recipes = [];
     let price = $(`#${element.id}`).find('input[name="price"]').val();
     Object.keys(groupedAttributes).forEach(index => {
-        let uuidItem = groupedAttributes[index].find(item => item.name === 'inventory_history[]');
+        let isCustomItem = groupedAttributes[index].find(item => item.name === 'is_custom[]');
+        let isCustom = isCustomItem && isCustomItem.value === '1';
         let qtyItem = groupedAttributes[index].find(item => item.name === 'qty[]');
 
-        // Push a new recipe object into recipes array
-        if (uuidItem && qtyItem) {
-            let recipe = {
-                uuid: uuidItem.value,
-                qty: qtyItem.value
-            };
+        let recipe = { qty: qtyItem ? qtyItem.value : null, is_custom: isCustom ? 1 : 0 };
 
-            // Remove null values from recipe object
-            recipe = Object.fromEntries(
-                Object.entries(recipe).filter(([_, v]) => v != null)
-            );
+        if (isCustom) {
+            let inventoryUuidItem = groupedAttributes[index].find(item => item.name === 'inventory_uuid[]');
+            let customPriceItem = groupedAttributes[index].find(item => item.name === 'custom_price[]');
+            recipe.uuid = inventoryUuidItem ? inventoryUuidItem.value : null;
+            recipe.custom_price = customPriceItem ? customPriceItem.value : null;
+        } else {
+            let historyUuidItem = groupedAttributes[index].find(item => item.name === 'inventory_history[]');
+            recipe.uuid = historyUuidItem ? historyUuidItem.value : null;
+        }
 
-            recipes.push(recipe);
+        if (recipe.uuid && recipe.qty) {
+            recipes.push(Object.fromEntries(Object.entries(recipe).filter(([_, v]) => v != null)));
         }
     });
 
