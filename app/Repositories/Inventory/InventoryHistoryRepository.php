@@ -21,7 +21,7 @@ class InventoryHistoryRepository extends BaseRepository
         abort_if((Auth::user()->userRole->id === 'user' && (Auth::user()->id !== $user->id)), 403, __("Can't see other user history"));
         $filters = [AllowedFilter::scope('start_between')];
         $sorts = ['updated_at'];
-        $query = parent::index($filters, $sorts)->with('inventory')->where('user_id', $user->id)->orderByDesc('id');
+        $query = parent::index($filters, $sorts)->with('inventory')->where('is_custom', false)->where('user_id', $user->id)->orderByDesc('id');
         if (request('q')) $query->whereHas('inventory', fn ($q) => $q->where('name', 'LIKE', '%' . request('q') . '%'));
 
         $dateMin = InventoryHistory::where('user_id', $user->id)->min('created_at');
