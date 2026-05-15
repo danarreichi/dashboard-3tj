@@ -13,6 +13,7 @@ class InventoryHistory extends BaseModel
 
     public const STATUS_IN = 'in';
     public const STATUS_OUT = 'out';
+    public const IS_CUSTOM = true;
 
     protected $casts = [
         'payload' => 'json',

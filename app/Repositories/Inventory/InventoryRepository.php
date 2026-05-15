@@ -37,8 +37,10 @@ class InventoryRepository extends BaseRepository
         if (request('excludes')) {
             $data->whereNotIn('uuid', explode(',', request('excludes')));
         }
-
-        return $data->get();
+        if (request('q')) {
+            $data->where('name', 'LIKE', '%' . request('q') . '%');
+        }
+        return $data->paginate(15)->withQueryString();
     }
 
     public function adjustQty(Inventory $inventory, array $attributes)

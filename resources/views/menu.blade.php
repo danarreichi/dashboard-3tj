@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>var t=localStorage.getItem('theme');if(t)document.documentElement.setAttribute('data-bs-theme',t);</script>
     <title>Inventory - Mazer Admin Dashboard</title>
 
     <link rel="shortcut icon"
@@ -21,10 +22,13 @@
     {{-- DataTables --}}
     <link rel="stylesheet" href="{{ asset('dist/assets/extensions/datatables.net-bs5/css/dataTables.bootstrap5.min.css') }}">
     <link rel="stylesheet" crossorigin href="{{ asset('dist/assets/compiled/css/table-datatable-jquery.css') }}">
+    {{-- Select2 --}}
+    <link rel="stylesheet" href="{{ asset('dist/assets/extensions/select2/select2.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('dist/assets/extensions/select2/select2-bootstrap-5-theme.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('dist/assets/extensions/select2/select2-custom-style.css') }}">
 </head>
 
 <body>
-    <script src="{{ asset('dist/assets/static/js/initTheme.js') }}"></script>
     <div id="app">
         <x-sidebar></x-sidebar>
         <div id="main">
@@ -120,9 +124,11 @@
     <script src="{{ asset('dist/assets/extensions/datatables.net-bs5/js/dataTables.bootstrap5.min.js') }}"></script>
     <!-- SweetAlert2 -->
     <script src="{{ asset('dist/assets/extensions/sweetalert2/sweetalert2.min.js') }}"></script>
+    {{-- Select2 --}}
+    <script src="{{ asset('dist/assets/extensions/select2/select2.min.js') }}"></script>
     {{-- Page JS --}}
-    <script src="{{ asset('page-js/base.js') }}"></script>
-    <script src="{{ asset('page-js/menu.js') }}"></script>
+    <script src="{{ asset('page-js/base.js') }}?v={{ filemtime(public_path('page-js/base.js')) }}"></script>
+    <script src="{{ asset('page-js/menu.js') }}?v={{ filemtime(public_path('page-js/menu.js')) }}"></script>
 </body>
 
 </html>

@@ -78,6 +78,24 @@ function getQueryParamValue(key) {
     return paramValue;
 }
 
+function showLoading() {
+    $('#ajaxLoadingOverlay').show();
+}
+
+function hideLoading() {
+    $('#ajaxLoadingOverlay').hide();
+}
+
+$(document).ready(function () {
+    $('body').append(
+        '<div id="ajaxLoadingOverlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:99999;">' +
+        '<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bs-body-bg);color:var(--bs-body-color);padding:24px 32px;border-radius:10px;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,0.4);border:1px solid var(--bs-border-color);">' +
+        '<div class="spinner-border text-primary" role="status" style="width:2.5rem;height:2.5rem;"></div>' +
+        '<p class="mt-3 mb-0 fw-semibold">Memproses...</p>' +
+        '</div></div>'
+    );
+});
+
 var dataTablesIdLang = {
     "sEmptyTable": "Tidak ada data yang tersedia pada tabel ini",
     "sProcessing": "Sedang memproses...",

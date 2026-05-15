@@ -41,6 +41,6 @@ class MenuCategoryRepository extends BaseRepository
                 $q->where('name', 'LIKE', '%' . request('q') . '%');
             });
         }
-        return $query->get();
+        return $query->paginate(15)->withQueryString();
     }
 }

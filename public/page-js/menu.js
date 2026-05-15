@@ -3,8 +3,8 @@ var menuPricesTable;
 $(document).ready(function () {
     getProfile();
     if (getQueryParamValue('filter[trashed]')) $('#filterTrashed').val(getQueryParamValue('filter[trashed]'));
-    getMenuCategoryDropdown('menuCategoryId');
-    getMenuCategoryDropdown('menuCategoryIdEdit');
+    initMenuCategorySelect2('menuCategoryId', 'primary');
+    initMenuCategorySelect2('menuCategoryIdEdit', 'secondaryEdit');
 });
 
 var Toast = Swal.mixin({
@@ -42,55 +42,67 @@ function getProfile() {
     });
 }
 
-function getMenuCategoryDropdown(type) {
-    var headers = {
-        'Authorization': 'Bearer ' + localStorage.getItem("bearer")
-    };
-    $.ajax({
-        url: host + "dropdown/menu-category",
-        type: 'GET',
-        headers: headers,
-        success: function (response) {
-            var selectElement = $('#' + type);
-            selectElement.empty(); // Clear existing options
-            selectElement.append(
-                '<option value="" style="display: none;" disabled selected>Pilih kategori menu</option>'
-            );
-
-            response.data.forEach(function (item, index) {
-                selectElement.append('<option value="' + item.uuid + '">' + item.name +
-                    '</option>');
-            });
-        },
-        error: function (xhr, status, error) {
-            console.error(JSON.parse(xhr.responseText).message);
+function initMenuCategorySelect2(selectId, modalId) {
+    $('#' + selectId).select2({
+        theme: 'bootstrap-5',
+        placeholder: 'Pilih kategori menu',
+        allowClear: true,
+        dropdownParent: $('#' + modalId),
+        ajax: {
+            url: host + 'dropdown/menu-category',
+            headers: { 'Authorization': 'Bearer ' + localStorage.getItem('bearer') },
+            dataType: 'json',
+            delay: 300,
+            data: function (params) {
+                return { q: params.term || '', page: params.page || 1 };
+            },
+            processResults: function (response, params) {
+                return {
+                    results: response.data.map(function (item) {
+                        return { id: item.uuid, text: item.name };
+                    }),
+                    pagination: { more: response.meta.current_page < response.meta.last_page }
+                };
+            },
+            cache: true
         }
     });
 }
 
-function getInventoryDropdown(excludes) {
-    var headers = {
-        'Authorization': 'Bearer ' + localStorage.getItem("bearer")
-    };
-    $.ajax({
-        url: host + "dropdown/inventory" + (excludes ? `?${excludes}` : ''),
-        type: 'GET',
-        headers: headers,
-        body: body,
-        success: function (response) {
-            var selectElement = $('#inventories');
-            selectElement.empty(); // Clear existing options
-            selectElement.append(
-                '<option value="" style="display: none;" disabled selected>Pilih bahan yang dibutuhkan</option>'
-            );
-
-            response.data.forEach(function (item, index) {
-                selectElement.append(`<option value="${item.uuid}" data-name="${item.name}" data-unit="${item.unit}">${item.name}</option>`);
-            });
-        },
-        error: function (xhr, status, error) {
-            console.error(JSON.parse(xhr.responseText).message);
+function initInventorySelect2() {
+    if ($('#inventories').hasClass('select2-hidden-accessible')) {
+        $('#inventories').select2('destroy');
+    }
+    $('#inventories').select2({
+        theme: 'bootstrap-5',
+        placeholder: 'Pilih bahan yang dibutuhkan',
+        allowClear: true,
+        dropdownParent: $('#successAddMenuPrice'),
+        ajax: {
+            url: host + 'dropdown/inventory',
+            headers: { 'Authorization': 'Bearer ' + localStorage.getItem('bearer') },
+            dataType: 'json',
+            delay: 300,
+            data: function (params) {
+                var excludes = $('#tempRecipeForm').serializeArray()
+                    .filter(item => item.name === 'inventory_uuid[]')
+                    .map(item => item.value);
+                return { q: params.term || '', page: params.page || 1, excludes: excludes.join(',') };
+            },
+            processResults: function (response, params) {
+                return {
+                    results: response.data.map(function (item) {
+                        return { id: item.uuid, text: item.name, unit: item.unit };
+                    }),
+                    pagination: { more: response.meta.current_page < response.meta.last_page }
+                };
+            },
+            cache: false
         }
+    }).on('select2:select', function (e) {
+        $('#unitPlaceholder').html(e.params.data.unit || '');
+    }).on('select2:clear', function () {
+        $('#unitPlaceholder').html('');
     });
 }
 
@@ -106,6 +118,8 @@ function addMenu(element) {
         contentType: false, // Tell jQuery not to process the data
         processData: false, // Tell jQuery not to set contentType,
         headers: headers,
+        beforeSend: function () { showLoading(); },
+        complete: function () { hideLoading(); },
         success: function (response) {
             clearInputErrors();
             $('#primary').modal('hide');
@@ -150,7 +164,10 @@ let customized_datatable = $('#menuTable').DataTable({
         {
             data: null,
             render: function (data, type, row) {
-                return `<img src="${pageHost}${row.image}" class="me-2" style="width: 100px; height: 100px; object-fit: cover;"></img>` + row.name;
+                const imgEl = row.image
+                    ? `<img src="${pageHost}${row.image}" class="me-2" style="width: 100px; height: 100px; object-fit: cover;">`
+                    : `<div class="me-2 d-inline-flex align-items-center justify-content-center bg-secondary rounded text-white" style="width: 100px; height: 100px; font-size: 0.7rem;">No Image</div>`;
+                return imgEl + row.name;
             }
         },
         {
@@ -235,11 +252,20 @@ function getMenu(element) {
         type: 'GET',
         data: queryParams,
         headers: headers,
+        beforeSend: function () { showLoading(); },
+        complete: function () { hideLoading(); },
         success: function (response) {
             $('#uuidEdit').val(response.data.uuid);
             $('#nameEdit').val(response.data.name);
-            $('#menuCategoryIdEdit').val(response.data.category_uuid);
+            var categoryOption = new Option(response.data.category, response.data.category_uuid, true, true);
+            $('#menuCategoryIdEdit').empty().append(categoryOption).trigger('change');
             $('#delete').attr('data-uuid', response.data.uuid);
+            resetImageEdit();
+            if (response.data.image) {
+                $('#imagePreviewImgEdit').attr('src', response.data.image);
+                $('#imagePreviewEdit').show();
+                $('#clearImageEdit').show();
+            }
             $('#secondaryEdit').modal('show');
         },
         error: function (xhr, status, error) {
@@ -261,6 +287,8 @@ function getPrices(element) {
         type: 'GET',
         data: queryParams,
         headers: headers,
+        beforeSend: function () { showLoading(); },
+        complete: function () { hideLoading(); },
         success: function (response) {
             document.getElementById('tempRecipeForm').setAttribute('data-uuid', element.dataset.uuid);
             $('#modalMenuName').html(response.meta.menu_name);
@@ -349,30 +377,50 @@ function getPrices(element) {
     });
 }
 
-function getInventoryHistoryDropdown(inventoryUuid) {
-    var queryParams = {};
-    var headers = {
-        'Authorization': 'Bearer ' + localStorage.getItem("bearer")
-    };
-    $.ajax({
-        url: host + 'dropdown/inventory/' + inventoryUuid + '/history',
-        type: 'GET',
-        data: queryParams,
-        headers: headers,
-        success: function (response) {
-            var selectElement = $(`#${inventoryUuid}`);
-            selectElement.empty(); // Clear existing options
-            selectElement.append(
-                '<option value="" style="display: none;" disabled selected>Pilih harga restock terbaru</option>'
-            );
-            response.data.forEach(function (item, index) {
-                selectElement.append(`<option value="${item.uuid}" data-price-per-unit="${item.price_per_unit}">${item.price} @${item.qty}</option>`);
-            });
-        },
-        error: function (xhr, status, error) {
-            console.error(JSON.parse(xhr.responseText).message);
+function initHistorySelect2(inventoryUuid) {
+    $('#' + inventoryUuid).select2({
+        theme: 'bootstrap-5',
+        placeholder: 'Pilih harga restock',
+        dropdownParent: $('#successAddMenuPrice'),
+        ajax: {
+            url: host + 'dropdown/inventory/' + inventoryUuid + '/history',
+            headers: { 'Authorization': 'Bearer ' + localStorage.getItem('bearer') },
+            dataType: 'json',
+            delay: 250,
+            processResults: function (response) {
+                return {
+                    results: response.data.map(function (item) {
+                        return { id: item.uuid, text: item.price + ' @' + item.qty, pricePerUnit: item.price_per_unit };
+                    })
+                };
+            },
+            cache: true
         }
+    }).on('select2:select', function () {
+        calculateHpp();
     });
+}
+
+function switchPriceMode(button, inventoryUuid, mode) {
+    var btnGroup = $(button).closest('.btn-group');
+    btnGroup.find('.btn').removeClass('active');
+    $(button).addClass('active');
+
+    if (mode === 'history') {
+        $('#custom-section-' + inventoryUuid).hide();
+        $('#custom-price-' + inventoryUuid).prop('required', false).val('');
+        $('#history-section-' + inventoryUuid).show();
+        $('#' + inventoryUuid).prop('required', true);
+        $('#is-custom-' + inventoryUuid).val('0');
+    } else {
+        $('#history-section-' + inventoryUuid).hide();
+        $('#' + inventoryUuid).prop('required', false).val(null).trigger('change');
+        $('#custom-section-' + inventoryUuid).show();
+        $('#custom-price-' + inventoryUuid).prop('required', true);
+        $('#is-custom-' + inventoryUuid).val('1');
+    }
+
+    calculateHpp();
 }
 
 const rupiah = (number) => {
@@ -382,22 +430,26 @@ const rupiah = (number) => {
     }).format(number);
 }
 
-// var HPP = 0;
 function calculateHpp() {
     let HPP = 0;
-    if ($('[name="inventory_history[]"]').length === 0) {
-        $('#hppPlaceholder').html(`HPP: ${rupiah(HPP)}`);
-        return; // Exit function early if there are no elements
-    }
-    $('[name="inventory_history[]"]').each(function () {
-        var selectedOption = $(this).find('option:selected');
-        var pricePerUnit = selectedOption.data('price-per-unit') ? selectedOption.data('price-per-unit') : 0;
 
-        // Find the nearest <tr> element
-        var row = $(this).closest('tr');
-        var qty = parseFloat(row.find('input[name="qty[]"]').val());
-        HPP = HPP + (pricePerUnit * qty);
+    $('[name="is_custom[]"]').each(function () {
+        var group = $(this).data('group');
+        var isCustom = $(this).val() === '1';
+        var qty = parseFloat($('input[name="qty[]"][data-group="' + group + '"]').val()) || 0;
+
+        if (isCustom) {
+            var customPrice = parseFloat($('#custom-price-' + group).val()) || 0;
+            HPP += customPrice * qty;
+        } else {
+            var selectedData = $('#' + group).select2('data');
+            var pricePerUnit = (selectedData && selectedData.length > 0 && selectedData[0].id)
+                ? parseFloat(selectedData[0].pricePerUnit) || 0
+                : 0;
+            HPP += pricePerUnit * qty;
+        }
     });
+
     $('#hppPlaceholder').html(`HPP: ${rupiah(HPP)}`);
 }
 
@@ -410,9 +462,9 @@ function addPrice(element) {
     $('#successPrices').modal('hide');
     $('#addMenuPriceTable tbody').empty();
     $('#saveMenuPriceButton').hide();
-    getInventoryDropdown();
     calculateHpp();
     $('#successAddMenuPrice').modal('show');
+    initInventorySelect2();
 }
 
 function backToPriceModal() {
@@ -423,31 +475,44 @@ function backToPriceModal() {
 function addRecipeTemp(element) {
     event.preventDefault();
     let attributes = $('#' + element.id).serializeArray();
-    var selectedOption = $('#inventories').find(':selected');
-    var inventoryName = selectedOption.data('name');
-    var inventoryUnit = selectedOption.data('unit');
+    var selectedData = $('#inventories').select2('data')[0];
+    var inventoryName = selectedData ? selectedData.text : '';
+    var inventoryUnit = selectedData ? selectedData.unit : '';
+    var uuid = attributes[0].value;
+    var qty = attributes[1].value;
     var rowCount = $('#addMenuPriceTable tbody tr').length + 1;
+
     var newRow = `<tr>
                 <td class="row-number">${rowCount}</td>
                 <td>${inventoryName}</td>
-                <td>${attributes[1].value}${inventoryUnit}</td>
+                <td>${qty}${inventoryUnit || ''}</td>
                 <td>
-                    <select id="${attributes[0].value}" data-group="${attributes[0].value}" onchange="calculateHpp()" name="inventory_history[]" class="form-control" required>
-                        <option style="display: none;" selected>Pilih harga restock terbaru</option>
-                    </select>
+                    <div class="btn-group btn-group-sm w-100 mb-1" role="group">
+                        <button type="button" class="btn btn-outline-secondary active" onclick="switchPriceMode(this, '${uuid}', 'manual')">Manual</button>
+                        <button type="button" class="btn btn-outline-secondary" onclick="switchPriceMode(this, '${uuid}', 'history')">Riwayat</button>
+                    </div>
+                    <div id="history-section-${uuid}" style="display:none; width:100%;">
+                        <select id="${uuid}" data-group="${uuid}" name="inventory_history[]" class="form-control" style="width:100%;"></select>
+                    </div>
+                    <div id="custom-section-${uuid}" style="width:100%;">
+                        <div class="input-group">
+                            <span class="input-group-text">Rp</span>
+                            <input type="number" id="custom-price-${uuid}" data-group="${uuid}" name="custom_price[]" class="form-control" min="1" placeholder="Harga per satuan" oninput="calculateHpp()" required>
+                        </div>
+                    </div>
                 </td>
-                <input type="hidden" id="inventoryUuid" value="${attributes[0].value}" data-group="${attributes[0].value}" name="inventory_uuid[]">
-                <input type="hidden" id="qty" value="${attributes[1].value}" data-group="${attributes[0].value}" name="qty[]">
+                <input type="hidden" value="${uuid}" data-group="${uuid}" name="inventory_uuid[]">
+                <input type="hidden" value="${qty}" data-group="${uuid}" name="qty[]">
+                <input type="hidden" id="is-custom-${uuid}" data-group="${uuid}" name="is_custom[]" value="1">
                 <td><button type="button" onclick="removeRow(this)" class="removeRow btn btn-danger w-100">Hapus</button></td>
                 </tr>`;
 
-    getInventoryHistoryDropdown(attributes[0].value);
-    clearForm(element.id);
-    $('#unitPlaceholder').html('');
     $('#addMenuPriceTable tbody').append(newRow);
-    let excludedInventories = $('#tempRecipeForm').serializeArray('inventory_uuid').filter(item => item.name === 'inventory_uuid[]').map(item => item.value);
-    getInventoryDropdown(`excludes=${excludedInventories}`);
+    initHistorySelect2(uuid);
     $('#saveMenuPriceButton').show();
+    $('#inventories').val(null).trigger('change');
+    $('[name="qtyTemp"]').val('');
+    $('#unitPlaceholder').html('');
 }
 
 function saveMenuPriceForm(element) {
@@ -475,22 +540,24 @@ function saveMenuPriceForm(element) {
     let recipes = [];
     let price = $(`#${element.id}`).find('input[name="price"]').val();
     Object.keys(groupedAttributes).forEach(index => {
-        let uuidItem = groupedAttributes[index].find(item => item.name === 'inventory_history[]');
+        let isCustomItem = groupedAttributes[index].find(item => item.name === 'is_custom[]');
+        let isCustom = isCustomItem && isCustomItem.value === '1';
         let qtyItem = groupedAttributes[index].find(item => item.name === 'qty[]');
 
-        // Push a new recipe object into recipes array
-        if (uuidItem && qtyItem) {
-            let recipe = {
-                uuid: uuidItem.value,
-                qty: qtyItem.value
-            };
+        let recipe = { qty: qtyItem ? qtyItem.value : null, is_custom: isCustom ? 1 : 0 };
 
-            // Remove null values from recipe object
-            recipe = Object.fromEntries(
-                Object.entries(recipe).filter(([_, v]) => v != null)
-            );
+        if (isCustom) {
+            let inventoryUuidItem = groupedAttributes[index].find(item => item.name === 'inventory_uuid[]');
+            let customPriceItem = groupedAttributes[index].find(item => item.name === 'custom_price[]');
+            recipe.uuid = inventoryUuidItem ? inventoryUuidItem.value : null;
+            recipe.custom_price = customPriceItem ? customPriceItem.value : null;
+        } else {
+            let historyUuidItem = groupedAttributes[index].find(item => item.name === 'inventory_history[]');
+            recipe.uuid = historyUuidItem ? historyUuidItem.value : null;
+        }
 
-            recipes.push(recipe);
+        if (recipe.uuid && recipe.qty) {
+            recipes.push(Object.fromEntries(Object.entries(recipe).filter(([_, v]) => v != null)));
         }
     });
 
@@ -505,6 +572,8 @@ function saveMenuPriceForm(element) {
         type: 'POST',
         data: dataObject,
         headers: headers,
+        beforeSend: function () { showLoading(); },
+        complete: function () { hideLoading(); },
         success: function (response) {
             clearInputErrors();
             Toast.fire({
@@ -552,8 +621,6 @@ function removeRow(element) {
     $(element).closest('tr').remove();
     updateRowNumbers();
     calculateHpp();
-    let excludedInventories = $('#tempRecipeForm').serializeArray('inventory_uuid').filter(item => item.name === 'inventory_uuid[]').map(item => item.value);
-    getInventoryDropdown(`excludes=${excludedInventories}`);
 }
 
 function editMenu(element) {
@@ -570,6 +637,8 @@ function editMenu(element) {
         contentType: false, // Tell jQuery not to process the data
         processData: false, // Tell jQuery not to set contentType,
         headers: headers,
+        beforeSend: function () { showLoading(); },
+        complete: function () { hideLoading(); },
         success: function (response) {
             $('#secondaryEdit').modal('hide');
             clearInputErrors();
@@ -616,6 +685,8 @@ function deleteMenu(element) {
                 url: host + 'menu/' + element.dataset.uuid,
                 type: 'DELETE',
                 headers: headers,
+                beforeSend: function () { showLoading(); },
+                complete: function () { hideLoading(); },
                 success: function (response) {
                     $('#secondaryEdit').modal('hide');
                     clearInputErrors();
@@ -660,6 +731,8 @@ function restoreMenu(element) {
                 url: host + 'menu/' + element.dataset.uuid + '/restore',
                 type: 'GET',
                 headers: headers,
+                beforeSend: function () { showLoading(); },
+                complete: function () { hideLoading(); },
                 success: function (response) {
                     Toast.fire({
                         icon: 'success',
@@ -696,6 +769,8 @@ function activatePrice(element) {
                 url: host + 'menu/' + element.dataset.menuUuid + '/price/' + element.dataset.uuid + '/activate',
                 type: 'GET',
                 headers: headers,
+                beforeSend: function () { showLoading(); },
+                complete: function () { hideLoading(); },
                 success: function (response) {
                     Toast.fire({
                         icon: 'success',
@@ -727,3 +802,49 @@ const setTableColor = () => {
     });
 }
 setTableColor();
+
+function resetImageEdit() {
+    $('#imageEdit').val('');
+    $('#clearImageFlag').val('0');
+    $('#imagePreviewEdit').hide();
+    $('#imagePreviewImgEdit').attr('src', '');
+    $('#clearImageEdit').hide();
+}
+
+function clearImageInput() {
+    $('#imageEdit').val('');
+    $('#clearImageFlag').val('1');
+    $('#imagePreviewEdit').hide();
+    $('#imagePreviewImgEdit').attr('src', '');
+    $('#clearImageEdit').hide();
+}
+
+$('#imageEdit').on('change', function () {
+    const file = this.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            $('#imagePreviewImgEdit').attr('src', e.target.result);
+            $('#imagePreviewEdit').show();
+            $('#clearImageEdit').show();
+            $('#clearImageFlag').val('0');
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+$('#secondaryEdit').on('hidden.bs.modal', function () {
+    resetImageEdit();
+    $('#menuCategoryIdEdit').val(null).trigger('change');
+});
+
+$('#primary').on('hidden.bs.modal', function () {
+    $('#menuCategoryId').val(null).trigger('change');
+});
+
+$('#successAddMenuPrice').on('hidden.bs.modal', function () {
+    if ($('#inventories').hasClass('select2-hidden-accessible')) {
+        $('#inventories').val(null).trigger('change');
+    }
+    $('#unitPlaceholder').html('');
+});

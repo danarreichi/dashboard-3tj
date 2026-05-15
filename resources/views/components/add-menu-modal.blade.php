@@ -18,13 +18,11 @@
                     </div>
                     <label for="unit" class="form-label">Kategori menu</label>
                     <div class="form-group">
-                        <select name="menu_category_id" id="menuCategoryId" class="form-control">
-                            <option value="" style="display: none;" selected>Pilih kategori menu</option>
-                        </select>
+                        <select name="menu_category_id" id="menuCategoryId" class="form-control"></select>
                     </div>
                     <label for="code" class="form-label">Gambar produk</label>
                     <div class="form-group">
-                        <input type="file" class="form-control" name="image" id="image" accept="image/png, image/jpeg" required>
+                        <input type="file" class="form-control" name="image" id="image" accept="image/png, image/jpeg">
                     </div>
                 </div>
                 <div class="modal-footer">

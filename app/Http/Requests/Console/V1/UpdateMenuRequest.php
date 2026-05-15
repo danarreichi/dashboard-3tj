@@ -29,7 +29,8 @@ class UpdateMenuRequest extends FormRequest
         return [
             'name' => ['required', Rule::unique('menus', 'name')->whereNot('uuid', $this->menu->uuid)],
             'menu_category_id' => ['required', Rule::exists('menu_categories', 'uuid')],
-            'image' => ['nullable', 'file', 'mimes:png,jpg']
+            'image' => ['nullable', 'file', 'mimes:png,jpg'],
+            'clear_image' => ['nullable', 'boolean']
         ];
     }
 
