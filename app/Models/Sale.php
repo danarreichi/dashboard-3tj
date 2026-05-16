@@ -5,7 +5,6 @@ namespace App\Models;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 
 class Sale extends BaseModel
 {
@@ -23,8 +22,8 @@ class Sale extends BaseModel
 
     public function scopeStartBetween(Builder $query, $startDate, $endDate): Builder
     {
-        $start = Carbon::parse($startDate, 'Asia/Jakarta')->startOfDay()->utc();
-        $end = Carbon::parse($endDate, 'Asia/Jakarta')->endOfDay()->utc();
+        $start = Carbon::parse($startDate)->startOfDay();
+        $end = Carbon::parse($endDate)->endOfDay();
 
         return $query
             ->where('sales.created_at', '>=', $start)
