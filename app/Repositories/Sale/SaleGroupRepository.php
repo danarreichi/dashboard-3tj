@@ -4,6 +4,7 @@ namespace App\Repositories\Sale;
 
 use App\Models\SaleGroup;
 use App\Repositories\BaseRepository;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Spatie\QueryBuilder\AllowedFilter;
 
@@ -24,8 +25,10 @@ class SaleGroupRepository extends BaseRepository
                 if (request('start_between')) {
                     $startBetween = array_values(array_filter(explode(",", request('start_between'))));
                     if (count($startBetween) === 2) {
-                        $q->whereDate('sale_groups.created_at', '>=', $startBetween[0]);
-                        $q->whereDate('sale_groups.created_at', '<=', $startBetween[1]);
+                        $start = Carbon::parse($startBetween[0], 'Asia/Jakarta')->startOfDay()->utc();
+                        $end   = Carbon::parse($startBetween[1], 'Asia/Jakarta')->endOfDay()->utc();
+                        $q->whereDate('sale_groups.created_at', '>=', $start);
+                        $q->whereDate('sale_groups.created_at', '<=', $end);
                     }
                 }
             });
