@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -20,10 +21,13 @@ class Sale extends BaseModel
         return $this->belongsTo(SaleGroup::class);
     }
 
-    public function scopeStartBetween(Builder $query, $startDate, $endDate)
+    public function scopeStartBetween(Builder $query, $startDate, $endDate): Builder
     {
+        $start = Carbon::parse($startDate, 'Asia/Jakarta')->startOfDay()->utc();
+        $end = Carbon::parse($endDate, 'Asia/Jakarta')->endOfDay()->utc();
+
         return $query
-            ->whereDate('sales.created_at', '>=', $startDate)
-            ->whereDate('sales.created_at', '<=', $endDate);
+            ->where('sales.created_at', '>=', $start)
+            ->where('sales.created_at', '<=', $end);
     }
 }

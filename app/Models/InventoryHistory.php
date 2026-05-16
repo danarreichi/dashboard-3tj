@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -50,8 +51,11 @@ class InventoryHistory extends BaseModel
 
     public function scopeStartBetween(Builder $query, $startDate, $endDate)
     {
+        $start = Carbon::parse($startDate, 'Asia/Jakarta')->startOfDay()->utc();
+        $end = Carbon::parse($endDate, 'Asia/Jakarta')->endOfDay()->utc();
+
         return $query
-            ->whereDate('created_at', '>=', $startDate)
-            ->whereDate('created_at', '<=', $endDate);
+            ->whereDate('created_at', '>=', $start)
+            ->whereDate('created_at', '<=', $end);
     }
 }

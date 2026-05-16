@@ -5,6 +5,7 @@ namespace App\Repositories\Menu;
 use App\Models\Menu;
 use App\Models\Sale;
 use App\Repositories\BaseRepository;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -65,8 +66,10 @@ class MenuRepository extends BaseRepository
                 if (request('start_between')) {
                     $startBetween = array_values(array_filter(explode(",", request('start_between'))));
                     if (count($startBetween) === 2) {
-                        $q->whereDate('sales.created_at', '>=', $startBetween[0]);
-                        $q->whereDate('sales.created_at', '<=', $startBetween[1]);
+                        $start = Carbon::parse($startBetween[0], 'Asia/Jakarta')->startOfDay()->utc();
+                        $end   = Carbon::parse($startBetween[1], 'Asia/Jakarta')->endOfDay()->utc();
+                        $q->where('sales.created_at', '>=', $start);
+                        $q->where('sales.created_at', '<=', $end);
                     }
                 }
             }]);
@@ -80,8 +83,8 @@ class MenuRepository extends BaseRepository
             });
         }
 
-        $minDate = Sale::min('created_at');
-        $maxDate = Sale::max('created_at');
+        $minDate = Sale::min('created_at') ? Carbon::parse(Sale::min('created_at'))->utc() : null;
+        $maxDate = Sale::max('created_at') ? Carbon::parse(Sale::max('created_at'))->utc() : null;
 
         return [$data->paginate(request('limit', 15))->withQueryString(), $minDate, $maxDate];
     }
