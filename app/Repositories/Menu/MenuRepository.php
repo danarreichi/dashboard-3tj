@@ -6,9 +6,6 @@ use App\Models\Menu;
 use App\Models\Sale;
 use App\Repositories\BaseRepository;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Spatie\QueryBuilder\AllowedFilter;
 
 class MenuRepository extends BaseRepository
@@ -47,12 +44,13 @@ class MenuRepository extends BaseRepository
         });
         if (request('q')) {
             $query->where(function ($q) {
-                $q->where('name', 'LIKE', '%' . request('q') . '%');
+                $q->where('name', 'LIKE', '%'.request('q').'%');
                 $q->orWhereHas('category', function ($q) {
-                    $q->where('name', 'LIKE', '%' . request('q') . '%');
+                    $q->where('name', 'LIKE', '%'.request('q').'%');
                 });
             });
         }
+
         return $query->paginate(request('limit', 15))->withQueryString();
     }
 
@@ -64,10 +62,10 @@ class MenuRepository extends BaseRepository
             ->with(['sales' => function ($q) {
                 $q->with('price');
                 if (request('start_between')) {
-                    $startBetween = array_values(array_filter(explode(",", request('start_between'))));
+                    $startBetween = array_values(array_filter(explode(',', request('start_between'))));
                     if (count($startBetween) === 2) {
-                        $start = Carbon::parse($startBetween[0], 'Asia/Jakarta')->startOfDay()->utc();
-                        $end   = Carbon::parse($startBetween[1], 'Asia/Jakarta')->endOfDay()->utc();
+                        $start = Carbon::parse($startBetween[0])->startOfDay();
+                        $end = Carbon::parse($startBetween[1])->endOfDay();
                         $q->where('sales.created_at', '>=', $start);
                         $q->where('sales.created_at', '<=', $end);
                     }
@@ -76,15 +74,15 @@ class MenuRepository extends BaseRepository
 
         if (request('q')) {
             $data->where(function ($q) {
-                $q->where('name', 'LIKE', '%' . request('q') . '%');
+                $q->where('name', 'LIKE', '%'.request('q').'%');
                 $q->orWhereHas('category', function ($q) {
-                    $q->where('name', 'LIKE', '%' . request('q') . '%');
+                    $q->where('name', 'LIKE', '%'.request('q').'%');
                 });
             });
         }
 
-        $minDate = Sale::min('created_at') ? Carbon::parse(Sale::min('created_at'))->utc() : null;
-        $maxDate = Sale::max('created_at') ? Carbon::parse(Sale::max('created_at'))->utc() : null;
+        $minDate = Sale::min('created_at') ? Carbon::parse(Sale::min('created_at')) : null;
+        $maxDate = Sale::max('created_at') ? Carbon::parse(Sale::max('created_at')) : null;
 
         return [$data->paginate(request('limit', 15))->withQueryString(), $minDate, $maxDate];
     }

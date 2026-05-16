@@ -30,7 +30,11 @@ class MacroServiceProvider extends ServiceProvider
      */
     private function registerWithCalculation(): void
     {
-        Builder::macro('withCalculation', function (string $relationName, string $calculation, ?string $alias = null) {
+        Builder::macro('withCalculation', function (string $relationName, string $calculation, string|\Closure|null $alias = null, ?\Closure $callback = null) {
+            if ($alias instanceof \Closure) {
+                $callback = $alias;
+                $alias = null;
+            }
             $alias = $alias ?? str_replace('.', '_', $relationName).'_calculation';
             $model = $this->getModel();
             $modelTable = $model->getTable();
@@ -167,6 +171,10 @@ class MacroServiceProvider extends ServiceProvider
             $relatedQuery = $deepestRelation->getRelated()->newQuery();
             $relatedQuery->applyScopes();
 
+            if ($callback) {
+                $callback($relatedQuery);
+            }
+
             $subquery = $relatedQuery->getQuery();
             $subquery->selectRaw($calculation);
 
@@ -211,6 +219,7 @@ class MacroServiceProvider extends ServiceProvider
                             );
                         }
                     }
+
                     continue;
                 }
 
@@ -248,6 +257,7 @@ class MacroServiceProvider extends ServiceProvider
                             );
                         }
                     }
+
                     continue;
                 }
 

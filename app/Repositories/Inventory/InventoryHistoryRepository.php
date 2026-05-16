@@ -23,10 +23,12 @@ class InventoryHistoryRepository extends BaseRepository
         $filters = [AllowedFilter::scope('start_between')];
         $sorts = ['updated_at'];
         $query = parent::index($filters, $sorts)->with('inventory')->where('is_custom', false)->where('user_id', $user->id)->orderByDesc('id');
-        if (request('q')) $query->whereHas('inventory', fn ($q) => $q->where('name', 'LIKE', '%' . request('q') . '%'));
+        if (request('q')) {
+            $query->whereHas('inventory', fn ($q) => $q->where('name', 'LIKE', '%'.request('q').'%'));
+        }
 
-        $dateMin = InventoryHistory::where('user_id', $user->id)->min('created_at') ? Carbon::parse(InventoryHistory::where('user_id', $user->id)->min('created_at'))->utc() : null;
-        $dateMax = InventoryHistory::where('user_id', $user->id)->max('created_at') ? Carbon::parse(InventoryHistory::where('user_id', $user->id)->max('created_at'))->utc() : null;
+        $dateMin = InventoryHistory::where('user_id', $user->id)->min('created_at') ? Carbon::parse(InventoryHistory::where('user_id', $user->id)->min('created_at')) : null;
+        $dateMax = InventoryHistory::where('user_id', $user->id)->max('created_at') ? Carbon::parse(InventoryHistory::where('user_id', $user->id)->max('created_at')) : null;
 
         return [$query->paginate(request('limit', 15))->withQueryString(), $dateMin, $dateMax];
     }
@@ -34,6 +36,7 @@ class InventoryHistoryRepository extends BaseRepository
     public function listDropdownByInventory(Inventory $inventory)
     {
         $query = parent::index()->with('inventory')->where('inventory_id', $inventory->id)->where('status', InventoryHistory::STATUS_IN)->where('is_custom', false)->orderByDesc('id');
+
         return $query->limit(5)->get();
     }
 
@@ -42,7 +45,9 @@ class InventoryHistoryRepository extends BaseRepository
         $filters = [AllowedFilter::scope('start_between')];
         $sorts = ['updated_at'];
         $query = parent::index($filters, $sorts)->with('user', 'inventory')->where('inventory_id', $inventory->id)->where('is_custom', false)->orderByDesc('id');
-        if (request('q')) $query->whereHas('user', fn ($q) => $q->where('name', 'LIKE', '%' . request('q') . '%'));
+        if (request('q')) {
+            $query->whereHas('user', fn ($q) => $q->where('name', 'LIKE', '%'.request('q').'%'));
+        }
 
         $dateMin = InventoryHistory::where('inventory_id', $inventory->id)->min('created_at') ? Carbon::parse(InventoryHistory::where('inventory_id', $inventory->id)->min('created_at')) : null;
         $dateMax = InventoryHistory::where('inventory_id', $inventory->id)->max('created_at') ? Carbon::parse(InventoryHistory::where('inventory_id', $inventory->id)->max('created_at')) : null;

@@ -6,7 +6,6 @@ use App\Models\SaleGroup;
 use App\Repositories\BaseRepository;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
-use Spatie\QueryBuilder\AllowedFilter;
 
 class SaleGroupRepository extends BaseRepository
 {
@@ -17,16 +16,28 @@ class SaleGroupRepository extends BaseRepository
 
     public function earningsByDate()
     {
+        $salesFilter = function ($q) {
+            if (request('start_between')) {
+                $startBetween = array_values(array_filter(explode(',', request('start_between'))));
+                if (count($startBetween) === 2) {
+                    $start = Carbon::parse($startBetween[0])->startOfDay();
+                    $end = Carbon::parse($startBetween[1])->endOfDay();
+                    $q->where(function ($q) use ($start, $end) {
+                        $q->whereDate('sales.created_at', '>=', $start);
+                        $q->whereDate('sales.created_at', '<=', $end);
+                    });
+                }
+            }
+        };
         $data = SaleGroup::query()
-            ->withCalculation('sales', 'SUM(qty)', 'sales_qty')
-            ->withCalculation('sales.price.inventoryHistories', 'SUM(inventory_histories.price / IFNULL(inventory_histories.qty, 1))', 'hpp')
-            ->withCalculation('sales.price', 'SUM(price)', 'price')
+            ->withCalculation('sales.price', 'SUM(sales.qty * menu_prices.price)', 'total', $salesFilter)
+            ->withCalculation('sales.price.inventoryHistories', 'SUM(sales.qty * inventory_histories.price / IFNULL(inventory_histories.qty, 1))', 'hpp', $salesFilter)
             ->where(function ($q) {
                 if (request('start_between')) {
-                    $startBetween = array_values(array_filter(explode(",", request('start_between'))));
+                    $startBetween = array_values(array_filter(explode(',', request('start_between'))));
                     if (count($startBetween) === 2) {
-                        $start = Carbon::parse($startBetween[0], 'Asia/Jakarta')->startOfDay()->utc();
-                        $end   = Carbon::parse($startBetween[1], 'Asia/Jakarta')->endOfDay()->utc();
+                        $start = Carbon::parse($startBetween[0])->startOfDay();
+                        $end = Carbon::parse($startBetween[1])->endOfDay();
                         $q->whereDate('sale_groups.created_at', '>=', $start);
                         $q->whereDate('sale_groups.created_at', '<=', $end);
                     }
@@ -34,12 +45,12 @@ class SaleGroupRepository extends BaseRepository
             });
         $data = DB::query()
             ->selectRaw('
-                SUM(sales_qty * price) as total_sum, 
-                SUM((sales_qty * price) - (hpp * sales_qty)) as total_sum_clean, 
-                SUM(discount) as discount_sum, 
-                SUM((sales_qty * price) - discount) as total_after_discount_sum, 
-                SUM(((sales_qty * price) - (hpp * sales_qty)) - discount) as total_after_discount_sum_clean, 
-                SUM(hpp * sales_qty) as hpp
+                SUM(total) as total_sum,
+                SUM(total - hpp) as total_sum_clean,
+                SUM(discount) as discount_sum,
+                SUM(total - discount) as total_after_discount_sum,
+                SUM((total - hpp) - discount) as total_after_discount_sum_clean,
+                SUM(hpp) as hpp
             ')
             ->fromSub($data->toBase(), 't')
             ->first();
