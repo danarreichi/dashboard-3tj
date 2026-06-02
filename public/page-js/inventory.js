@@ -25,7 +25,8 @@ var flatPickr = flatpickr('.flatpickr-range', {
     altFormat: "F j, Y",
     dateFormat: "Y-m-d",
     mode: 'range',
-    locale: 'id'
+    locale: 'id',
+    appendTo: document.getElementById('infoHistory')
 });
 
 const Swal2 = Swal.mixin({
@@ -525,7 +526,8 @@ function adjustStock(element) {
                 altFormat: "F j, Y",
                 dateFormat: "Y-m-d",
                 mode: 'range',
-                locale: 'id'
+                locale: 'id',
+                appendTo: document.getElementById('infoHistory')
             });
         },
         reverseButtons: false // optional, makes the "No" button come first

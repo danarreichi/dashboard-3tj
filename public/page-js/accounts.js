@@ -12,7 +12,8 @@ $(document).ready(function () {
         altFormat: "F j, Y",
         dateFormat: "Y-m-d",
         mode: 'range',
-        locale: 'id'
+        locale: 'id',
+        appendTo: document.getElementById('infoHistory')
     });
 });
 

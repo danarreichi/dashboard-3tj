@@ -2,8 +2,10 @@
 
 namespace App\Http\Resources\Console\V1;
 
+use App\Models\User;
 use App\Traits\RelationShortcut;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Auth;
 
 class SaleResource extends JsonResource
 {
@@ -17,7 +19,8 @@ class SaleResource extends JsonResource
      */
     public function toArray($request)
     {
-        $hpp = $this->qty * $this->getPropWhenLoaded('price', 'hpp'); 
+        $hpp = $this->qty * $this->getPropWhenLoaded('price', 'hpp');
+        if (Auth::user()->user_role_id == User::ROLE_USER) $hpp = 0;
         $price = ($this->qty * $this->getPropWhenLoaded('price', 'price')) - $hpp;
         return [
             'qty' => $this->qty,
