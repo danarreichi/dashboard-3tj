@@ -7,10 +7,12 @@ use App\Http\Requests\Console\V1\CheckoutRequest;
 use App\Http\Resources\Console\V1\MenuSaleResource;
 use App\Http\Resources\Console\V1\SaleResource;
 use App\Models\Menu;
+use App\Models\User;
 use App\Repositories\Inventory\InventoryRepository;
 use App\Repositories\Menu\MenuRepository;
 use App\Repositories\Sale\SaleGroupRepository;
 use App\Repositories\Sale\SaleRepository;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class SaleController extends Controller
@@ -33,6 +35,11 @@ class SaleController extends Controller
     {
         [$menuSales, $minDate, $maxDate] = $this->menuRepository->listMenuSales();
         $earnings = $this->saleGroupRepository->earningsByDate();
+        if (Auth::user()->user_role_id == User::ROLE_USER) {
+            $earnings->total_sum_clean = 0;
+            $earnings->hpp = 0;
+            $earnings->total_after_discount_sum_clean = 0;
+        }
         return MenuSaleResource::collection($menuSales)->additional([
             'meta' => [
                 'start_date' => $minDate,
@@ -51,7 +58,10 @@ class SaleController extends Controller
     {
         $menu = Menu::withTrashed()->where('uuid', $menu)->firstOrFail();
         [$data, $countSale, $totalSale, $totalSaleClean, $hpp] = $this->repository->listSalesByMenu($menu);
-
+        if (Auth::user()->user_role_id == User::ROLE_USER) {
+            $totalSaleClean = 0;
+            $hpp = 0;
+        }
         return SaleResource::collection($data)->additional([
             'meta' => [
                 'product_name' => $menu->name,

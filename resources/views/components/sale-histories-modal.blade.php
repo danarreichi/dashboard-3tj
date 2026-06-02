@@ -19,10 +19,12 @@
                     </div>
                     <div class="col-6">
                         <label class="form-label mb-1">Jumlah pendapatan: <span class="fw-semibold" id="productSales"></span></label>
-                        <br>
-                        <label class="form-label mb-1">Jumlah HPP: <span class="fw-semibold" id="productHpp"></span></label>
-                        <br>
-                        <label class="form-label mb-1">Jumlah pendapatan (Bersih): <span class="fw-semibold" id="productSalesClean"></span></label>
+                        <span class="hpp-details">
+                            <br>
+                            <label class="form-label mb-1">Jumlah HPP: <span class="fw-semibold" id="productHpp"></span></label>
+                            <br>
+                            <label class="form-label mb-1">Jumlah pendapatan (Bersih): <span class="fw-semibold" id="productSalesClean"></span></label>
+                        </span>
                     </div>
                 </div>
                 <hr>
@@ -33,8 +35,8 @@
                                 <th>No.</th>
                                 <th>Jumlah terjual</th>
                                 <th>Harga produk</th>
-                                <th>HPP</th>
-                                <th>Pendapatan (Bersih)</th>
+                                <th class="hpp-details">HPP</th>
+                                <th>Pendapatan</th>
                                 <th>Tanggal transaksi</th>
                             </tr>
                         </thead>

@@ -1,5 +1,6 @@
 var menuPricesTable;
 let startBetween = null;
+let userRole = null;
 
 $(document).ready(function () {
     getProfile();
@@ -56,8 +57,10 @@ function getProfile() {
         dataType: 'json',
         headers: headers,
         success: function (response) {
-            if (response.user.user_role.id === 'admin') $('#addMenuBtn').show();
-            if (response.user.user_role.id === 'admin') $('#delete').show();
+            userRole = response.user.user_role.id;
+            if (userRole === 'admin') $('#addMenuBtn').show();
+            if (userRole === 'admin') $('#delete').show();
+            if (userRole === 'user') $('.hpp-details').addClass('d-none');
             $('#profileName').html(response.user.name);
             $('#profileRole').html(response.user.user_role.name);
         },
@@ -300,7 +303,8 @@ function getSale(element) {
                 data: 'price_per_unit'
             },
             {
-                data: 'hpp'
+                data: 'hpp',
+                visible: userRole !== 'user'
             },
             {
                 data: 'sales_sum'
